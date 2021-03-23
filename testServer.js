@@ -179,6 +179,8 @@ const server = net.createServer(socket => {
   const startRound = player => {
     const gameId = players[player.id].gameId;
 
+    players[player.id].health = 100;
+
     if (games[gameId].weaponAddMode === 0) {
       // Constant ammo
       players[player.id].ammo = getConstantAmmo(games[gameId].round);
@@ -190,7 +192,13 @@ const server = net.createServer(socket => {
       );
     }
 
-    player.writeData(`game\tstartround\t0\t0`);
+    if (!games[gameId].currentMap) {
+      games[gameId].currentMap = randomInt(100);
+
+      console.log(id, 'Map set to', games[gameId].currentMap);
+    }
+
+    player.writeData(`game\tstartround\t${games[gameId].currentMap}\t0`);
   };
 
   const startTurn = player => {
@@ -211,9 +219,11 @@ const server = net.createServer(socket => {
 
     players[player.id].action = null;
 
-    player.writeData(
-      `game\tstartturn\t${speed}\t${wind}\t${damage}\t1000\t${player.inGameId}\t${player.ammo.join('\t')}`
-    );
+    if (player.health > 0) {
+      player.writeData(
+        `game\tstartturn\t${speed}\t${wind}\t${damage}\t1000\t${player.inGameId}\t${player.ammo.join('\t')}`
+      );
+    }
   };
 
   const joinLobby = () => {
@@ -331,6 +341,7 @@ const server = net.createServer(socket => {
           action: null,
           wantsNewGame: false,
           ammo: Array(18).fill(0),
+          health: 100,
           socket,
           writeData
         };
@@ -406,7 +417,8 @@ const server = net.createServer(socket => {
             players: 0,
             round: 0,
             bots: [],
-            state: 'wait'
+            state: 'wait',
+            currentMap: null
           };
 
           if (game.name === '-') game.name = players[id].nick;
@@ -551,6 +563,8 @@ const server = net.createServer(socket => {
           let actionId = Number(params[2]);
           let actionString = params.slice(3).join('\t');
 
+          if (players[id].health <= 0) actionId = -1;
+
           if (actionId !== -1 && actionId !== 0) {
             if (players[id].ammo[actionId] > 0) players[id].ammo[actionId]--;
             else actionId = -1;
@@ -578,8 +592,9 @@ const server = net.createServer(socket => {
 
           for (let playerId in players) {
             if (players[playerId] && players[playerId].gameId === players[id].gameId) {
-              if (!players[playerId].action) {
+              if (!players[playerId].action && players[playerId].health > 0) {
                 console.log(id, 'Cannot start action,', players[playerId].nick, 'is still thinking');
+
                 canStartAction = false;
               }
 
@@ -593,7 +608,11 @@ const server = net.createServer(socket => {
             for (let playerId in players) {
               if (players[playerId] && players[playerId].gameId === players[id].gameId) {
                 for (let otherPlayerId in players) {
-                  if (players[otherPlayerId] && players[otherPlayerId].gameId === players[id].gameId) {
+                  if (players[otherPlayerId] && players[otherPlayerId].gameId === players[id].gameId && players[otherPlayerId].health > 0) {
+                    if (players[otherPlayerId].action === null || players[otherPlayerId].action === undefined) {
+                      players[otherPlayerId].action = '-1';
+                    }
+
                     players[playerId].writeData(`game\taction\t${players[otherPlayerId].inGameId}\t${players[otherPlayerId].action}`);
                   }
                 }
@@ -615,13 +634,24 @@ const server = net.createServer(socket => {
             const healths = [];
             
             for (let i = 0; i < playerCount; i++) {
-              healths.push(Number(params[2 + i]));
+              const health = Number(params[2 + i]);
+
+              healths.push(health);
+
+              for (let playerId in players) {
+                const player = players[playerId];
+
+                if (player && player.gameId === gameId && player.inGameId === i) {
+                  player.health = health;
+                }
+              }
             }
 
             if (healths.filter(health => health > 0).length <= 1) {
               // next round
               games[gameId].round++;
               games[gameId].wind = null;
+              games[gameId].currentMap = null;
 
               let winnerId = -1;
 
