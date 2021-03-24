@@ -12,7 +12,7 @@ const decreasingAmmo = Array(18).fill(9999);
 decreasingAmmo[0] = -1;
 
 const roundAmmo = [
-  [-1, 8, 4, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 5, 5],
+  [-1, 8, 4, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
   [0, 3, 2, 2, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 0],
   [0, 3, 2, 1, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0],
   [0, 3, 2, 2, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0],
@@ -33,6 +33,9 @@ const roundAmmo = [
   [0, 3, 2, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
   [0, 3, 2, 2, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0, 0]
 ];
+
+const teleportsPerRound = 0.25;
+const shieldsPerRound = 0.25;
 
 const players = {};
 const games = [];
@@ -190,6 +193,19 @@ const server = net.createServer(socket => {
         players[player.id].ammo,
         roundAmmo[games[gameId].round] || roundAmmo[roundAmmo.length - 1]
       );
+    }
+
+    if (games[gameId].round === 0) {
+      // Add shields and teleports
+      const shields = Math.ceil(games[gameId].rounds * shieldsPerRound);
+      const teleports = Math.ceil(games[gameId].rounds * teleportsPerRound);
+
+      const ammo = Array(18).fill(0);
+
+      ammo[16] = shields;
+      ammo[17] = teleports;
+
+      players[player.id].ammo = addAmmo(players[player.id].ammo, ammo);
     }
 
     if (!games[gameId].currentMap) {
