@@ -2,14 +2,11 @@
 
 const net = require('net');
 
-const serverIp = 'localhost';
+const serverIp = '51.195.222.59';
 const port = 4242;
 
 const enableBots = false;
 const motd = 'Welcome!';
-
-const decreasingAmmo = Array(18).fill(9999);
-decreasingAmmo[0] = -1;
 
 const roundAmmo = [
   [-1, 8, 4, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
@@ -79,13 +76,28 @@ function getCurrentGame(playerId) {
 }
 
 function addAmmo(ammo1, ammo2) {
-  for (let i = 0; i < 18; i++) ammo1[i] += ammo2[i];
+  for (let i = 0; i < 18; i++) {
+    if (ammo1[i] !== -1) {
+      ammo1[i] += ammo2[i];
+    }
+  }
 
   return ammo1;
 }
 
 function getConstantAmmo(round) {
-  return addAmmo(roundAmmo[0], roundAmmo[Math.min(round, roundAmmo.length)]);
+  return addAmmo(roundAmmo[0], roundAmmo[Math.min(round, roundAmmo.length - 1)]);
+}
+
+function getDecreasingAmmo(rounds) {
+  // TODO test and commit
+  const ammo = roundAmmo[0];
+
+  for (let round = 1; round < rounds; round++) {
+    ammo = addAmmo(ammo, roundAmmo[Math.min(round, roundAmmo.length - 1)]);
+  }
+
+  return ammo;
 }
 
 console.log('Initializing...');
@@ -191,7 +203,7 @@ const server = net.createServer(socket => {
       // Increasing ammo
       players[player.id].ammo = addAmmo(
         players[player.id].ammo,
-        roundAmmo[games[gameId].round] || roundAmmo[roundAmmo.length - 1]
+        roundAmmo[Math.min(games[gameId].round, roundAmmo.length - 1)]
       );
     }
 
@@ -208,8 +220,8 @@ const server = net.createServer(socket => {
       players[player.id].ammo = addAmmo(players[player.id].ammo, ammo);
     }
 
-    if (!games[gameId].currentMap) {
-      games[gameId].currentMap = randomInt(100);
+    if (games[gameId].currentMap === null) {
+      games[gameId].currentMap = randomInt(1000000);
 
       console.log(id, 'Map set to', games[gameId].currentMap);
     }
@@ -305,8 +317,11 @@ const server = net.createServer(socket => {
       players[playerId].wantsNewGame = false;
       players[playerId].state = 'game';
 
-      if (games[gameId].weaponAddMode === -1) players[playerId].ammo = decreasingAmmo;
-      else players[playerId].ammo = Array(18).fill(0);
+      if (games[gameId].weaponAddMode === -1) {
+        players[playerId].ammo = getDecreasingAmmo(games[gameId].rounds);
+      } else {
+        players[playerId].ammo = Array(18).fill(0);
+      }
 
       if (enableBots) {
         player.writeData(
@@ -624,8 +639,8 @@ const server = net.createServer(socket => {
             for (let playerId in players) {
               if (players[playerId] && players[playerId].gameId === players[id].gameId) {
                 for (let otherPlayerId in players) {
-                  if (players[otherPlayerId] && players[otherPlayerId].gameId === players[id].gameId && players[otherPlayerId].health > 0) {
-                    if (players[otherPlayerId].action === null || players[otherPlayerId].action === undefined) {
+                  if (players[otherPlayerId] && players[otherPlayerId].gameId === players[id].gameId) {
+                    if (players[otherPlayerId].action === null || players[otherPlayerId].action === undefined || players[otherPlayerId].health <= 0) {
                       players[otherPlayerId].action = '-1';
                     }
 
