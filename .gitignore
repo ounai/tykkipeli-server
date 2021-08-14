@@ -108,3 +108,6 @@ dist
 *.swp
 *.swo
 
+# server data files
+data/
+

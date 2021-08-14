@@ -1,0 +1,35 @@
+{
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "dotenv": "^10.0.0",
+    "sequelize": "^6.6.5",
+    "sqlite3": "^5.0.2"
+  },
+  "name": "tykkipeli-server",
+  "description": "Node server implementation for the Aapeli/Playforia classic cannon game",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "start": "NODE_ENV=production node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ounai/tykkipeli-server.git"
+  },
+  "author": "Onni Rantanen (@ounai)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ounai/tykkipeli-server/issues"
+  },
+  "homepage": "https://github.com/ounai/tykkipeli-server#readme",
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.15.0",
+    "eslint": "^7.32.0"
+  }
+}
