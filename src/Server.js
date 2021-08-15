@@ -54,7 +54,10 @@ class Server {
     if (typeof(maxPlayers) === 'number' && !isNaN(maxPlayers)) this.maxPlayers = maxPlayers;
     else this.maxPlayers = null;
 
-    this.packetHandler = new PacketHandler('./src/net/packets/in');
+    this.packetHandler = new PacketHandler(
+      './src/net/packets/in',
+      './src/net/packets/in/lobby'
+    );
 
     this.database = new Database(config.database);
     await this.database.init();

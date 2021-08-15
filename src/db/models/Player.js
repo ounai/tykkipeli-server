@@ -4,11 +4,11 @@ const { Model, DataTypes, Op } = require('sequelize');
 
 const GameState = require('./GameState');
 
-const { getRandomInt } = require('../../utils');
+const { getRandomInt } = require('../../Utils');
 
 const columns = {
   username: {
-    type: DataTypes.STRING(32),
+    type: DataTypes.STRING(64),
     allowNull: false,
     unique: true,
     defaultValue: () => `~anonym-${getRandomInt(9000) + 1000}`
@@ -67,7 +67,8 @@ const columns = {
 };
 
 const associated = [
-  ['belongsTo', 'GameState', { constraints: false }]
+  ['belongsTo', 'GameState'],
+  ['hasOne', 'GamePlayer']
 ];
 
 class Player extends Model {

@@ -3,17 +3,14 @@
 const OutPacket = require('./OutPacket');
 
 class BasicInfoPacket extends OutPacket {
-  constructor(isRegistered, accessLevel, creditAmount, badWordFilterEnabled, emailConfirmed) {
-    const emailUnconfirmed = !emailConfirmed;
+  constructor(player) {
+    const isRegistered = player.isRegistered ? 't' : 'f';
+    const accessLevel = player.accessLevel;
+    const creditAmount = player.creditAmount;
+    const badWordFilterEnabled = player.badWordFilterEnabled ? 't' : 'f';
+    const emailUnconfirmed = !player.emailConfirmed ? 't' : 'f';
 
-    super(
-      'basicinfo',
-      isRegistered ? 't' : 'f',
-      accessLevel,
-      creditAmount,
-      badWordFilterEnabled ? 't' : 'f',
-      emailUnconfirmed ? 't' : 'f'
-    );
+    super('basicinfo', isRegistered, accessLevel, creditAmount, badWordFilterEnabled, emailUnconfirmed);
   }
 }
 

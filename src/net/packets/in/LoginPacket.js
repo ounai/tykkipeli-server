@@ -4,11 +4,12 @@ const Player = require('../../../db/models/Player');
 const GameState = require('../../../db/models/GameState');
 const InPacket = require('./InPacket');
 const PacketType = require('../../PacketType');
+
 const BasicInfoPacket = require('../out/BasicInfoPacket');
 const StatusPacket = require('../out/StatusPacket');
 const OwnJoinPacket = require('../out/lobby/OwnJoinPacket');
 const NumberOfUsersPacket = require('../out/lobby/NumberOfUsersPacket');
-//const GameListPacket = require('../out/lobby/GameListPacket');
+const GameListFullPacket = require('../out/lobby/GameListFullPacket');
 //const UsersPacket = require('../out/lobby/UsersPacket');
 //const ServerSayPacket = require('../out/lobby/ServerSayPacket');
 
@@ -37,21 +38,13 @@ class LoginPacket extends InPacket {
       }
     }
 
-    new BasicInfoPacket(
-      player.isRegistered,
-      player.accessLevel,
-      player.creditAmount,
-      player.badWordFilterEnabled,
-      player.emailConfirmed
-    ).write(connection);
-
     await player.setGameState(await GameState.findByName('LOBBY'));
 
+    new BasicInfoPacket(player).write(connection);
     new StatusPacket('lobby').write(connection);
-
     new OwnJoinPacket(player).write(connection);
-
     new NumberOfUsersPacket(player).write(connection);
+    new GameListFullPacket().write(connection);
 
     // TODO
     //   lobby gamelist full,

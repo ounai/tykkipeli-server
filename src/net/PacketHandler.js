@@ -3,7 +3,7 @@
 const Player = require('../db/models/Player');
 
 const log = require('../Logger')('PacketHandler');
-const { getFilenamesInDirectory } = require('../utils');
+const { getFilenamesInDirectory } = require('../Utils');
 
 class PacketHandler {
   #packetHandlers;
@@ -22,7 +22,7 @@ class PacketHandler {
 
       const player = await Player.findById(connection.playerId);
 
-      log.debug('Fetched player for packet handler', packetHandler.constructor.name);
+      log.debug('Fetched player', player.id, 'for packet handler', packetHandler.constructor.name);
 
       if (!player) throw new Error(`No player found but ${packetHandler.constructor.name} requires one!`);
       else if (!player.isConnected) throw new Error(`Cannot handle ${packetHandler.constructor.name}, player is not connected!`);
@@ -33,8 +33,6 @@ class PacketHandler {
   #registerPacketHandlers(packetHandlersPath) {
     log.info('Registering packet handlers...');
 
-    this.#packetHandlers = [];
-
     for (const filename of getFilenamesInDirectory(`${packetHandlersPath}`, 'js')) {
       log.debug('Registering packet', filename);
 
@@ -44,10 +42,14 @@ class PacketHandler {
     }
   }
 
-  constructor(packetHandlersPath) {
-    log.debug('Creating packet handler for path', packetHandlersPath);
+  constructor(...packetHandlersPaths) {
+    this.#packetHandlers = [];
 
-    this.#registerPacketHandlers(packetHandlersPath);
+    for (const packetHandlersPath of packetHandlersPaths) {
+      log.debug('Creating packet handler for path', packetHandlersPath);
+
+      this.#registerPacketHandlers(packetHandlersPath);
+    }
   }
 
   async onPacket(connection, packet) {

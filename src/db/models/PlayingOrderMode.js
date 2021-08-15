@@ -16,18 +16,15 @@ const columns = {
 };
 
 const rows = [
-  { id: 0, name: 'NONE' },
-  { id: 1, name: 'LOGIN' },
-  { id: 2, name: 'LOBBY' },
-  { id: 3, name: 'GAME_LOBBY' },
-  { id: 4, name: 'GAME' }
+  { id: 0, name: 'TURNED' },
+  { id: 1, name: 'SAME_TIME' }
 ];
 
 const associated = [
-  ['hasMany', 'Player']
+  ['hasMany', 'Game']
 ];
 
-class GameState extends Model {
+class PlayingOrderMode extends Model {
   static get columns() {
     return columns;
   }
@@ -39,15 +36,7 @@ class GameState extends Model {
   static get associated() {
     return associated;
   }
-
-  static async findByName(name) {
-    return await this.findOne({
-      where: {
-        name
-      }
-    });
-  }
 }
 
-module.exports = GameState;
+module.exports = PlayingOrderMode;
 

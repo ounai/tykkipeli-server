@@ -6,7 +6,7 @@ const Packet = require('./Packet');
 const PacketType = require('./PacketType');
 
 const log = require('../Logger')('Connection');
-const { getRandomInt } = require('../utils');
+const { getRandomInt } = require('../Utils');
 
 class Connection {
   #socket;

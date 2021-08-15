@@ -3,15 +3,19 @@
 const { Sequelize } = require('sequelize');
 
 const log = require('../Logger')('Database');
-const { getFilenamesInDirectory } = require('../utils');
+const { getFilenamesInDirectory } = require('../Utils');
 
 class Database {
   #sequelize;
   #models;
 
   async #writeRows(model, rows = []) {
-    for (const row of rows) {
-      await model.create(row);
+    if (rows.length > 0) {
+      for (const row of rows) {
+        await model.create(row);
+      }
+
+      log.debug('Wrote', rows.length, 'rows to model', model.name);
     }
   }
 

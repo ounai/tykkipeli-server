@@ -34,7 +34,7 @@ class Packet {
   #deserializeDataPacket(packet) {
     const splitPacket = packet.split(' ');
 
-    if (splitPacket.length !== 3) {
+    if (splitPacket.length < 3) {
       throw new Error(`Cannot deserialize data packet ${packet}, invalid length ${splitPacket.length}!`);
     }
 
@@ -46,7 +46,7 @@ class Packet {
       this.sequenceNumber = parsedSequenceNumber;
     }
 
-    this.args = splitPacket[2].split('\t');
+    this.args = splitPacket.slice(2).join(' ').split('\t');
   }
 
   #cleanArgs() {

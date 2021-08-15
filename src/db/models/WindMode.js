@@ -9,7 +9,7 @@ const columns = {
     allowNull: false
   },
   name: {
-    type: DataTypes.STRING(16),
+    type: DataTypes.STRING(8),
     allowNull: false,
     unique: true
   }
@@ -17,17 +17,15 @@ const columns = {
 
 const rows = [
   { id: 0, name: 'NONE' },
-  { id: 1, name: 'LOGIN' },
-  { id: 2, name: 'LOBBY' },
-  { id: 3, name: 'GAME_LOBBY' },
-  { id: 4, name: 'GAME' }
+  { id: 1, name: 'NORMAL' },
+  { id: 2, name: 'RANDOM' }
 ];
 
 const associated = [
-  ['hasMany', 'Player']
+  ['hasMany', 'Game']
 ];
 
-class GameState extends Model {
+class WindMode extends Model {
   static get columns() {
     return columns;
   }
@@ -39,15 +37,7 @@ class GameState extends Model {
   static get associated() {
     return associated;
   }
-
-  static async findByName(name) {
-    return await this.findOne({
-      where: {
-        name
-      }
-    });
-  }
 }
 
-module.exports = GameState;
+module.exports = WindMode;
 
