@@ -11,7 +11,7 @@ config.server = {
 };
 
 config.database = {
-  enableLogging: true,
+  enableLogging: false,
   dialect: 'sqlite',
   storage: ':memory:'
   //storage: './data/db.sqlite'

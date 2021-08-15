@@ -52,6 +52,8 @@ class Database {
     // Predefined rows
     for (const [modelName, model] of Object.entries(this.#models)) {
       if (model.rows) {
+        log.debug('Clearing table', modelName);
+
         await model.destroy({ truncate: true });
         await this.#writeRows(model, model.rows);
       }

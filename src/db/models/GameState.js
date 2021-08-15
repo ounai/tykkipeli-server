@@ -39,6 +39,14 @@ class GameState extends Model {
   static get associated() {
     return associated;
   }
+
+  static async findByName(name) {
+    return await this.findOne({
+      where: {
+        name
+      }
+    });
+  }
 }
 
 module.exports = GameState;

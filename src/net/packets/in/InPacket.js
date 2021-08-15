@@ -5,11 +5,11 @@ const PacketType = require('../../PacketType');
 class InPacket {
   type = PacketType.NONE;
 
-  match(packet) {
+  match() {
     return false;
   }
 
-  handle(connection, packet) {
+  handle() {
     return;
   }
 }

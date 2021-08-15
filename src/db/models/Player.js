@@ -5,7 +5,6 @@ const { Model, DataTypes, Op } = require('sequelize');
 const GameState = require('./GameState');
 
 const { getRandomInt } = require('../../utils');
-const log = require('../../Logger')('Player');
 
 const columns = {
   username: {
@@ -80,32 +79,32 @@ class Player extends Model {
     return associated;
   }
 
-  static findById(id) {
-    return this.findByPk(id);
+  static async findById(id) {
+    return await this.findByPk(id);
   }
 
-  static destroyById(id) {
-    return this.destroy({
+  static async destroyById(id) {
+    return await this.destroy({
       where: { id }
     });
   }
 
-  static countConnected() {
-    return this.count({
+  static async countConnected() {
+    return await this.count({
       where: {
         isConnected: true
       }
     });
   }
 
-  static destroyOldDisconnectedPlayers(tresholdDate = null) {
+  static async destroyOldDisconnectedPlayers(tresholdDate = null) {
     if (tresholdDate === null) {
       // Default to one hour ago
       tresholdDate = new Date();
       tresholdDate.setHours(tresholdDate.getGetHours() - 1);
     }
 
-    return this.destroy({
+    return await this.destroy({
       where: {
         isConnected: false,
         disconnectedAt: {
@@ -115,13 +114,21 @@ class Player extends Model {
     });
   }
 
-  static countByGameState(...gameStateNames) {
-    return this.count({
+  static async countByGameState(...gameStateNames) {
+    return await this.count({
       where: {
         '$GameState.name$': gameStateNames
       },
       include: GameState
     });
+  }
+
+  static async isUsernameInUse(username) {
+    return !!(await this.findOne({
+      where: {
+        username
+      }
+    }));
   }
 
   #getUserInfoFlags() {
@@ -133,8 +140,8 @@ class Player extends Model {
 
     return (
       Object.entries(flags)
-        .filter(([flag, enabled]) => enabled)
-        .map(([flag, enable]) => flag)
+        .filter(([flag, enabled]) => typeof(flag) === 'string' && flag.length === 1 && enabled)
+        .map(([flag]) => flag)
         .join('')
     );
   }
@@ -158,31 +165,44 @@ class Player extends Model {
     }
   }
 
-  setConnected(connected) {
-    log.debug('Player', this.id, 'set connected:', connected);
+  async countOthersByGameState(...gameStateNames) {
+    return await Player.count({
+      where: {
+        id: {
+          [Op.not]: this.id
+        },
+        '$GameState.name$': gameStateNames
+      },
+      include: GameState
+    });
+  }
 
+  async setConnected(connected) {
     this.isConnected = connected;
     this.disconnectedAt = (connected ? null : new Date());
 
-    this.save();
+    await this.save();
   }
 
-  setLocale(locale) {
+  async setLocale(locale) {
     const language = locale.slice(0, 2);
-    log.debug('Player', this.id, 'set locale:', locale, 'and language:', language);
 
     this.locale = locale;
     this.language = language;
 
-    this.save();
+    await this.save();
   }
 
-  setRegistered(registered) {
-    log.debug('Player', this.id, 'set registered:', registered);
-
+  async setRegistered(registered) {
     this.isRegistered = registered;
 
-    this.save();
+    await this.save();
+  }
+
+  async setUsername(username) {
+    this.username = username;
+
+    await this.save();
   }
 }
 

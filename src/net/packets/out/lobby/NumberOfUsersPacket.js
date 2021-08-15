@@ -1,19 +1,18 @@
 'use strict';
 
 const OutPacket = require('../OutPacket');
-const Player = require('../../../../db/models/Player');
 
 class NumberOfUsersPacket extends OutPacket {
-  async #getArgs() {
-    const inLobbyCount = await Player.countByGameState('LOBBY');
-    const inGameCount = await Player.countByGameState('GAME_LOBBY', 'GAME');
+  async #getArgs(player) {
+    const inLobbyCount = await player.countOthersByGameState('LOBBY');
+    const inGameCount = await player.countOthersByGameState('GAME_LOBBY', 'GAME');
 
     return ['lobby', 'numberofusers', inLobbyCount, inGameCount];
   }
 
-  constructor() {
+  constructor(player) {
     super();
-    super.asyncArgs(this.#getArgs);
+    super.asyncArgs(() => this.#getArgs(player));
   }
 }
 
