@@ -2,7 +2,7 @@
 
 const { Model, DataTypes } = require('sequelize');
 
-const model = {
+const columns = {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -38,8 +38,8 @@ const rows = [
 ];
 
 class ChatRoomLanguage extends Model {
-  static get model() {
-    return model;
+  static get columns() {
+    return columns;
   }
 
   static get rows() {

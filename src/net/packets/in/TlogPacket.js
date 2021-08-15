@@ -1,10 +1,11 @@
 'use strict';
 
 const PacketType = require('../../PacketType');
+const InPacket = require('./InPacket');
 
 const log = require('../../../Logger')('TlogPacket');
 
-class TlogPacket {
+class TlogPacket extends InPacket {
   type = PacketType.STRING;
 
   match(packet) {

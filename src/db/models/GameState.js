@@ -2,7 +2,7 @@
 
 const { Model, DataTypes } = require('sequelize');
 
-const model = {
+const columns = {
   id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
@@ -10,7 +10,8 @@ const model = {
   },
   name: {
     type: DataTypes.STRING(16),
-    allowNull: false
+    allowNull: false,
+    unique: true
   }
 };
 
@@ -22,13 +23,21 @@ const rows = [
   { id: 4, name: 'GAME' }
 ];
 
+const associated = [
+  ['hasMany', 'Player', { constraints: false }]
+];
+
 class GameState extends Model {
-  static get model() {
-    return model;
+  static get columns() {
+    return columns;
   }
 
   static get rows() {
     return rows;
+  }
+
+  static get associated() {
+    return associated;
   }
 }
 

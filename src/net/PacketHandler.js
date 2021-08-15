@@ -25,7 +25,7 @@ class PacketHandler {
       log.debug('Fetched player for packet handler', packetHandler.constructor.name);
 
       if (!player) throw new Error(`No player found but ${packetHandler.constructor.name} requires one!`);
-      else if (!player.connected) throw new Error(`Cannot handle ${packetHandler.constructor.name}, player is not connected!`);
+      else if (!player.isConnected) throw new Error(`Cannot handle ${packetHandler.constructor.name}, player is not connected!`);
       else await packetHandler.handle(connection, packet, player);
     }
   }
@@ -54,18 +54,18 @@ class PacketHandler {
     let handled = false;
 
     for (const packetHandler of this.#packetHandlers) {
-      if (packetHandler.match(packet)) {
+      if (packet.type === packetHandler.type && packetHandler.match(packet)) {
         log.debug('Packet matches', packetHandler.constructor.name);
 
         await this.#handlePacketWithHandler(connection, packet, packetHandler);
+
+        log.info(packetHandler.constructor.name, 'handled!');
 
         handled = true;
       }
     }
 
-    if (!handled) {
-      log.debugError('Packet not handled!', packet);
-    }
+    if (!handled) log.debugError('Packet not handled!', packet);
   }
 }
 

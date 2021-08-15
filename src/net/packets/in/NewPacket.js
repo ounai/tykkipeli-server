@@ -3,10 +3,11 @@
 const Player = require('../../../db/models/Player');
 const IDPacket = require('../out/IDPacket');
 const PacketType = require('../../PacketType');
+const InPacket = require('./InPacket');
 
 const log = require('../../../Logger')('NewPacket');
 
-class NewPacket {
+class NewPacket extends InPacket {
   type = PacketType.COMMAND;
 
   match(packet) {

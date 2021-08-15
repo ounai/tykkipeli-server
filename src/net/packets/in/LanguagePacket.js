@@ -1,8 +1,9 @@
 'use strict';
 
 const PacketType = require('../../PacketType');
+const InPacket = require('./InPacket');
 
-class LanguagePacket {
+class LanguagePacket extends InPacket {
   type = PacketType.DATA;
   usesPlayer = true;
 
@@ -11,13 +12,13 @@ class LanguagePacket {
   }
 
   handle(connection, packet, player) {
-    const language = packet.getString(1);
+    const locale = packet.getString(1);
 
-    if (language.length !== 5) {
-      throw new Error(`Invalid language ${language}`);
+    if (locale.length !== 5) {
+      throw new Error(`Invalid locale ${locale}`);
     }
 
-    player.setLanguage(language);
+    player.setLocale(locale);
   }
 }
 

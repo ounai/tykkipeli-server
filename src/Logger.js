@@ -5,6 +5,7 @@ const chalk = require('chalk');
 const { currentTimeString } = require('./utils');
 
 const debug = (process.env.NODE_ENV !== 'production');
+const maxTitleLength = 16;
 
 class Logger {
   title;
@@ -12,14 +13,15 @@ class Logger {
   constructor(title) {
     if (debug) {
       if (typeof(title) !== 'string') this.title = null;
-      else this.title = title;
+      else this.title = title.slice(0, maxTitleLength);
     } else {
       this.title = null;
     }
   }
 
   #getLeader(stream, spaces = 0) {
-    return `[${currentTimeString()}, ${stream}]` + (this.title ? ' '.repeat(spaces) + this.title : '');
+    return `[${currentTimeString()}, ${stream}]`
+      + (this.title ? (' '.repeat(spaces) + ' '.repeat(maxTitleLength - this.title.length) + this.title) : '');
   }
 
   info(...args) {

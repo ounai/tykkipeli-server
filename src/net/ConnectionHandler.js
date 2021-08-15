@@ -4,7 +4,7 @@ const net = require('net');
 
 const Connection = require('./Connection');
 
-const log = require('../Logger')('ConnectionHandler');
+const log = require('../Logger')('ConnHandler');
 
 class ConnectionHandler {
   ip;

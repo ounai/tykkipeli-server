@@ -1,13 +1,13 @@
 'use strict';
 
-const StatusPacket = require('../out/StatusPacket');
 const VersionOKPacket = require('../out/VersionOKPacket');
 const VersionNotOKPacket = require('../out/VersionNotOKPacket');
 const PacketType = require('../../PacketType');
+const InPacket = require('./InPacket');
 
 const log = require('../../../Logger')('VersionPacket');
 
-class VersionPacket {
+class VersionPacket extends InPacket {
   type = PacketType.DATA;
 
   match(packet) {
@@ -19,7 +19,6 @@ class VersionPacket {
 
     if (versionNumber === 24) {
       new VersionOKPacket().write(connection);
-      new StatusPacket('login').write(connection);
     } else {
       log.debug('Invalid version number', versionNumber);
 
