@@ -4,14 +4,13 @@ const Player = require('../../../db/models/Player');
 const IDPacket = require('../out/IDPacket');
 const PacketType = require('../../PacketType');
 
-const log = require('../../../Logger')('NewHandler');
+const log = require('../../../Logger')('NewPacket');
 
-class NewHandler {
+class NewPacket {
+  type = PacketType.COMMAND;
+
   match(packet) {
-    return (
-      packet.type === PacketType.COMMAND
-      && packet.startsWith('new')
-    );
+    return packet.startsWith('new');
   }
 
   async handle(connection) {
@@ -27,5 +26,5 @@ class NewHandler {
   }
 }
 
-module.exports = NewHandler;
+module.exports = NewPacket;
 

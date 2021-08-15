@@ -18,7 +18,7 @@ class Connection {
 
   playerId;
 
-  #socketOnData(buffer) {
+  async #socketOnData(buffer) {
     log.debug(
       chalk.bold('In:'),
       buffer.toString()
@@ -30,22 +30,28 @@ class Connection {
         .join(', ')
     );
 
-    for (const packetString of buffer.toString().split('\n')) {
-      if (packetString.length === 0) continue;
+    try {
+      for (const packetString of buffer.toString().split('\n')) {
+        if (packetString.length === 0) continue;
 
-      const packet = new Packet(packetString);
+        const packet = new Packet(packetString);
 
-      if (packet.type === PacketType.DATA) {
-        if (packet.sequenceNumber <= this.#lastPacketReceived) {
-          return log.debug('Skipping duplicate packet!');
+        if (packet.type === PacketType.DATA) {
+          if (packet.sequenceNumber <= this.#lastPacketReceived) {
+            return log.debug('Skipping duplicate packet!');
+          }
+
+          this.#lastPacketReceived = packet.sequenceNumber;
         }
 
-        this.#lastPacketReceived = packet.sequenceNumber;
+        if (typeof(this.#onPacketListener) === 'function') {
+          await this.#onPacketListener(packet);
+        }
       }
+    } catch (err) {
+      log.error('Error in connection, disconnecting client:', err);
 
-      if (typeof(this.#onPacketListener) === 'function') {
-        this.#onPacketListener(packet);
-      }
+      this.disconnect();
     }
   }
 

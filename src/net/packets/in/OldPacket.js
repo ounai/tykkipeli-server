@@ -4,14 +4,13 @@ const Player = require('../../../db/models/Player');
 const ReconnectOKPacket = require('../out/ReconnectOKPacket');
 const PacketType = require('../../PacketType');
 
-const log = require('../../../Logger')('OldHandler');
+const log = require('../../../Logger')('OldPacket');
 
-class OldHandler {
+class OldPacket {
+  type = PacketType.COMMAND;
+
   match(packet) {
-    return (
-      packet.type === PacketType.COMMAND
-      && packet.startsWith('old')
-    );
+    return packet.startsWith('old');
   }
 
   async handle(connection, packet) {
@@ -31,5 +30,5 @@ class OldHandler {
   }
 }
 
-module.exports = OldHandler;
+module.exports = OldPacket;
 

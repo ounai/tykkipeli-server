@@ -5,14 +5,13 @@ const VersionOKPacket = require('../out/VersionOKPacket');
 const VersionNotOKPacket = require('../out/VersionNotOKPacket');
 const PacketType = require('../../PacketType');
 
-const log = require('../../../Logger')('VersionHandler');
+const log = require('../../../Logger')('VersionPacket');
 
-class VersionHandler {
+class VersionPacket {
+  type = PacketType.DATA;
+
   match(packet) {
-    return (
-      packet.type === PacketType.DATA
-      && packet.startsWith('version')
-    );
+    return packet.startsWith('version');
   }
 
   handle(connection, packet) {
@@ -31,5 +30,5 @@ class VersionHandler {
   }
 }
 
-module.exports = VersionHandler;
+module.exports = VersionPacket;
 

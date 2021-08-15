@@ -3,14 +3,13 @@
 const PacketType = require('../../PacketType');
 const Player = require('../../../db/models/Player');
 
-const log = require('../../../Logger')('EndHandler');
+const log = require('../../../Logger')('EndPacket');
 
-class EndHandler {
+class EndPacket {
+  type = PacketType.COMMAND;
+
   match(packet) {
-    return (
-      packet.type === PacketType.COMMAND
-      && packet.startsWith('end')
-    );
+    return packet.startsWith('end');
   }
 
   async handle(connection) {
@@ -26,5 +25,5 @@ class EndHandler {
   }
 }
 
-module.exports = EndHandler;
+module.exports = EndPacket;
 

@@ -2,14 +2,12 @@
 
 const PacketType = require('../../PacketType');
 
-class LanguageHandler {
+class LanguagePacket {
+  type = PacketType.DATA;
   usesPlayer = true;
 
   match(packet) {
-    return (
-      packet.type === PacketType.DATA
-      && packet.startsWith('language')
-    );
+    return packet.startsWith('language');
   }
 
   handle(connection, packet, player) {
@@ -23,5 +21,5 @@ class LanguageHandler {
   }
 }
 
-module.exports = LanguageHandler;
+module.exports = LanguagePacket;
 

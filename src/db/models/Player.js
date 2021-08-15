@@ -1,6 +1,6 @@
 'use strict';
 
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes, Op } = require('sequelize');
 
 const log = require('../../Logger')('Player');
 
@@ -63,6 +63,23 @@ class Player extends Model {
     return this.count({
       where: {
         connected: true
+      }
+    });
+  }
+
+  static destroyOldDisconnectedPlayers(tresholdDate = null) {
+    if (tresholdDate === null) {
+      // Default to one hour ago
+      tresholdDate = new Date();
+      tresholdDate.setHours(tresholdDate.getGetHours() - 1);
+    }
+
+    return this.destroy({
+      where: {
+        connected: false,
+        disconnectedAt: {
+          [Op.lt]: tresholdDate
+        }
       }
     });
   }

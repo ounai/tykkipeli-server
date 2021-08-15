@@ -10,14 +10,12 @@ const StatusPacket = require('../out/StatusPacket');
 //const UsersPacket = require('../out/lobby/UsersPacket');
 //const ServerSayPacket = require('../out/lobby/ServerSayPacket');
 
-class LoginHandler {
+class LoginPacket {
+  type = PacketType.DATA;
   usesPlayer = true;
 
   match(packet) {
-    return (
-      packet.type === PacketType.DATA
-      && packet.startsWith('login')
-    );
+    return packet.startsWith('login');
   }
 
   handle(connection, packet, player) {
@@ -40,5 +38,5 @@ class LoginHandler {
   }
 }
 
-module.exports = LoginHandler;
+module.exports = LoginPacket;
 
