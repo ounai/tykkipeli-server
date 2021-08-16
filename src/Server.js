@@ -1,19 +1,21 @@
 'use strict';
 
+const chalk = require('chalk');
+
 const ConnectionHandler = require('./net/ConnectionHandler');
 const Database = require('./db/Database');
 const Player = require('./db/models/Player');
 const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
 const PacketHandler = require('./net/PacketHandler');
+const OutPacket = require('./net/packets/out/OutPacket');
 
 const log = require('./Logger')('Server');
 
 class Server {
-  connectionHandler;
-  database;
-  packetHandler;
-
-  maxPlayers;
+  #connectionHandler;
+  #database;
+  #packetHandler;
+  #maxPlayers;
 
   async #onDisconnect(connection) {
     log.debug('Connection disconnected');
@@ -23,25 +25,25 @@ class Server {
     if (player) {
       player.setConnected(false);
 
-      log.info('Player', player.id, 'disconnected');
+      log.info('Player', chalk.magenta(player.toString()), 'disconnected');
     }
   }
 
-  async #onConnection(connection) {
-    if (this.maxPlayers !== null) {
+  async #onConnect(connection) {
+    if (this.#maxPlayers !== null) {
       const connectedPlayers = await Player.countConnected();
 
-      log.info('Player count:', connectedPlayers, '/', this.maxPlayers);
+      log.info('Player count before join:', connectedPlayers, '/', this.#maxPlayers);
 
-      if (connectedPlayers >= this.maxPlayers) {
+      if (connectedPlayers >= this.#maxPlayers) {
         log.info('Max number of players reached, not accepting connection');
 
         return new ServerFullPacket().write(connection);
       }
     }
 
-    connection.onPacket(packet => this.packetHandler.onPacket(connection, packet));
-    connection.onDisconnect(() => this.#onDisconnect(connection));
+    connection.onPacket(this.#packetHandler.onPacket.bind(this.#packetHandler, connection));
+    connection.onDisconnect(this.#onDisconnect.bind(this, connection));
     connection.handshake();
   }
 
@@ -51,19 +53,20 @@ class Server {
     if (typeof(ip) !== 'string') throw new Error(`Invalid ip ${ip}`);
     if (typeof(port) !== 'number' || isNaN(port)) throw new Error(`Invalid port ${port}`);
 
-    if (typeof(maxPlayers) === 'number' && !isNaN(maxPlayers)) this.maxPlayers = maxPlayers;
-    else this.maxPlayers = null;
+    if (typeof(maxPlayers) === 'number' && !isNaN(maxPlayers)) this.#maxPlayers = maxPlayers;
+    else this.#maxPlayers = null;
 
-    this.packetHandler = new PacketHandler(
+    this.#packetHandler = new PacketHandler(
+      this,
       './src/net/packets/in',
       './src/net/packets/in/lobby'
     );
 
-    this.database = new Database(config.database);
-    await this.database.init();
+    this.#database = new Database(config.database);
+    await this.#database.init();
 
-    this.connectionHandler = new ConnectionHandler(ip, port);
-    this.connectionHandler.onConnection(this.#onConnection.bind(this));
+    this.#connectionHandler = new ConnectionHandler(ip, port);
+    this.#connectionHandler.onConnection(this.#onConnect.bind(this));
   }
 
   constructor(config, afterInitCallback) {
@@ -73,9 +76,25 @@ class Server {
   }
 
   listen() {
-    this.connectionHandler.listen();
+    this.#connectionHandler.listen();
+  }
 
-    return this;
+  broadcast(players, packet) {
+    if (!(packet instanceof OutPacket)) throw new Error(`Invalid outgoing packet ${packet}`);
+
+    if (players.length === 0) {
+      log.debug(`Not broadcasting ${packet.constructor.name}, empty audience`);
+    } else {
+      for (const player of players) {
+        if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
+
+        log.debug('Sending', packet.constructor.name, 'to', chalk.magenta(player.toString()));
+
+        const playerConnection = this.#connectionHandler.getPlayerConnection(player);
+
+        packet.write(playerConnection);
+      }
+    }
   }
 }
 

@@ -15,16 +15,19 @@ class OldPacket extends InPacket {
   }
 
   async handle(connection, packet) {
+    log.debug('OldPacket received from connection', connection.id);
+
     const player = await Player.findById(packet.getNumber(1));
 
     if (!player.isConnected) {
       connection.playerId = player.id;
 
-      player.setConnected(true);
+      await player.setConnected(true);
+      await player.setConnectionId(connection.id);
+
+      log.debug(`Reconnected old player (id=${player.id}, connectionId=${player.connectionId})`);
 
       new ReconnectOKPacket().write(connection);
-
-      log.debug(`Reconnected old player (id=${player.id})`);
     } else {
       throw new Error(`Player ${player.id} tried to reconnect but is not disconnected!`);
     }

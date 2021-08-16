@@ -1,5 +1,7 @@
 'use strict';
 
+const chalk = require('chalk');
+
 const Player = require('../../../db/models/Player');
 const GameState = require('../../../db/models/GameState');
 const InPacket = require('./InPacket');
@@ -19,6 +21,19 @@ class LoginPacket extends InPacket {
   type = PacketType.DATA;
   usesPlayer = true;
 
+  // TODO move
+  async #requestUsername(player, username) {
+    log.debug('Client requesting username', chalk.cyan(username));
+
+    if (await Player.isUsernameInUse(username)) {
+      log.debug(`Username not set, "${chalk.cyan(username)}" already in use!`);
+    } else {
+      await player.setUsername(username);
+
+      log.debug(`Username "${chalk.cyan(username)}" set!`);
+    }
+  }
+
   match(packet) {
     return packet.startsWith('login');
   }
@@ -27,15 +42,7 @@ class LoginPacket extends InPacket {
     const username = packet.getString(1);
 
     if (typeof(username) === 'string' && username.length > 0 && username !== '-') {
-      log.debug('Client logged in with username:', username);
-
-      if (await Player.isUsernameInUse(username)) {
-        log.debug(`Username not set, "${username}" already in use!`);
-      } else {
-        await player.setUsername(username);
-
-        log.debug(`Username "${username}" set!`);
-      }
+      await this.#requestUsername(player, username);
     }
 
     await player.setGameState(await GameState.findByName('LOBBY'));
@@ -47,9 +54,9 @@ class LoginPacket extends InPacket {
     new GameListFullPacket().write(connection);
 
     // TODO
-    //   lobby gamelist full,
     //   lobby users,
     //   lobby serversay <motd>
+    //   broadcast lobby join
   }
 }
 

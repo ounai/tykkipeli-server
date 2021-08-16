@@ -41,15 +41,31 @@ class Database {
   }
 
   async #initAssociations() {
+    let associationsCount = 0, modelsCount = 0;
+
     for (const [modelName, model] of Object.entries(this.#models)) {
+      if (model.associated && model.associated.length > 0) modelsCount++;
+
       for (const [association, target, opts = {}] of (model.associated ?? [])) {
         log.debug('Creating association:', modelName, association, target);
 
         model[association](this.#models[target], opts);
+
+        associationsCount++;
       }
 
       await model.sync();
     }
+
+    log.debug(
+      'Done, created',
+      associationsCount,
+      'associations to',
+      modelsCount,
+      'out of',
+      Object.keys(this.#models).length,
+      'models'
+    );
   }
 
   async #setupModels() {

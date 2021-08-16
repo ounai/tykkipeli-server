@@ -60,7 +60,7 @@ class Packet {
   }
 
   #deserialize(packet) {
-    this.type = packet[0];
+    this.type = PacketType.get(packet[0]);
 
     if (this.type === PacketType.DATA) this.#deserializeDataPacket(packet);
     else if (this.type === PacketType.COMMAND) this.args = packet.split(' ').slice(1);
@@ -82,16 +82,16 @@ class Packet {
     }
   }
 
-  set sequenceNumber(n) {
+  set sequenceNumber(sequenceNumber) {
     if (this.type !== PacketType.DATA) {
       throw new Error(`Cannot set sequence number, unsupported for packets of type ${this.type}!`);
     }
 
-    if (typeof(n) !== 'number') {
-      throw new Error(`Cannot set sequence number, invalid number ${n}!`);
+    if (typeof(sequenceNumber) !== 'number' || isNaN(sequenceNumber)) {
+      throw new Error(`Cannot set sequence number, invalid number ${sequenceNumber}!`);
     }
 
-    this.sequenceNumber = n;
+    this.sequenceNumber = sequenceNumber;
   }
 
   toString() {
@@ -101,6 +101,7 @@ class Packet {
   startsWith(...str) {
     const argsJoined = this.args.join(' ');
     const strJoined = str.join(' ');
+
     return (argsJoined === strJoined || argsJoined.startsWith(strJoined + ' '));
   }
 

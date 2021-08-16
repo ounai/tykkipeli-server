@@ -12,7 +12,7 @@ class NumberOfUsersPacket extends OutPacket {
 
   constructor(player) {
     super();
-    super.asyncArgs(() => this.#getArgs(player));
+    super.asyncArgs(this.#getArgs.bind(this, player));
   }
 }
 

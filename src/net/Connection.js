@@ -12,17 +12,20 @@ class Connection {
   #socket;
   #onPacketListener;
   #onDisconnectListener;
+  #afterDisconnectCallback;
 
-  #lastPacketSent = 0;
+  #lastPacketSent = null;
   #lastPacketReceived = Number.NEGATIVE_INFINITY;
 
+  #id;
   playerId;
 
   async #socketOnData(buffer) {
     log.debug(
       chalk.bold('In:'),
       buffer.toString()
-        .replace(/\r/g, '')
+        .replace(/\r/g, chalk.blue('\\r'))
+        .replace(/\n/g, chalk.blue('\\n') + '\n')
         .split('\n')
         .filter(s => !!s)
         .map(s => s.replace(/\t/g, chalk.blue('\\t')))
@@ -58,31 +61,38 @@ class Connection {
   #socketOnEnd() {
     log.debug('Socket closed');
 
-    if (typeof(this.#onDisconnectListener) === 'function') {
-      this.#onDisconnectListener();
-    }
+    this.disconnect();
   }
 
   #socketOnError(err) {
     if (err.code === 'ECONNRESET') {
       log.debug('Connection reset');
 
-      if (typeof(this.#onDisconnectListener) === 'function') {
-        this.#onDisconnectListener();
-      }
+      this.disconnect();
     } else {
       log.error('Socket error:', err);
     }
   }
 
-  constructor(socket) {
-    log.info('New connection!');
+  constructor(id, socket, afterDisconnectCallback) {
+    log.info('New connection', id);
+
+    this.#id = id;
+    this.#socket = socket;
+    this.#afterDisconnectCallback = afterDisconnectCallback;
 
     socket.on('data', this.#socketOnData.bind(this));
     socket.on('end', this.#socketOnEnd.bind(this));
     socket.on('error', this.#socketOnError.bind(this));
+  }
 
-    this.#socket = socket;
+  get id() {
+    return this.#id;
+  }
+
+  get nextSequenceNumber() {
+    if (this.#lastPacketSent === null) return this.#lastPacketSent = 0;
+    else return ++this.#lastPacketSent;
   }
 
   handshake() {
@@ -97,21 +107,18 @@ class Connection {
     );
   }
 
-  writePacket(packet) {
-    // TODO validate type for bad data
-    if (packet.type === PacketType.NONE) {
-      throw new Error('Cannot write packet of type NONE!');
-    } else if (packet.type === PacketType.DATA) {
-      packet.sequenceNumber = this.#lastPacketSent++;
-    }
-
+  write(data, encoding = 'utf8') {
     log.debug(
       chalk.bold('Out:'),
-      `"${packet.toString().replace(/\t/g, chalk.blue('\\t'))}"`
+      ['"', '"'].join(
+        data.replace(/\r/g, chalk.blue('\\r'))
+          .replace(/\n/g, chalk.blue('\\n'))
+          .replace(/\t/g, chalk.blue('\\t'))
+      )
     );
 
     return new Promise(resolve => (
-      this.#socket.write(packet.toString() + '\r\n', 'utf8', resolve)
+      this.#socket.write(data, encoding, resolve)
     ));
   }
 
@@ -121,8 +128,6 @@ class Connection {
     }
 
     this.#onPacketListener = listener;
-
-    return this;
   }
 
   onDisconnect(listener) {
@@ -131,17 +136,19 @@ class Connection {
     }
 
     this.#onDisconnectListener = listener;
-
-    return this;
   }
 
   disconnect() {
     log.debug('Disconnecting client');
 
-    this.#socket.destroy();
-
     if (typeof(this.#onDisconnectListener) === 'function') {
       this.#onDisconnectListener();
+    }
+
+    this.#socket.destroy();
+
+    if (typeof(this.#afterDisconnectCallback) === 'function') {
+      this.#afterDisconnectCallback();
     }
   }
 }

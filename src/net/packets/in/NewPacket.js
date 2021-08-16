@@ -15,15 +15,18 @@ class NewPacket extends InPacket {
   }
 
   async handle(connection) {
+    log.debug('NewPacket received from connection', connection.id);
+
     const player = await Player.create();
 
     connection.playerId = player.id;
 
-    player.setConnected(true);
+    await player.setConnected(true);
+    await player.setConnectionId(connection.id);
+
+    log.debug(`Created new player (id=${player.id}, connectionId=${player.connectionId})`);
 
     new IDPacket(player.id).write(connection);
-
-    log.debug(`Created new player (id=${player.id})`);
   }
 }
 

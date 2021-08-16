@@ -7,6 +7,10 @@ const GameState = require('./GameState');
 const { getRandomInt } = require('../../Utils');
 
 const columns = {
+  connectionId: {
+    type: DataTypes.INTEGER,
+    unique: true
+  },
   username: {
     type: DataTypes.STRING(64),
     allowNull: false,
@@ -178,11 +182,26 @@ class Player extends Model {
     });
   }
 
+  async findOthersByGameState(...gameStateNames) {
+    return await Player.findAll({
+      where: {
+        id: {
+          [Op.not]: this.id
+        },
+        '$GameState.name$': gameStateNames
+      },
+      include: GameState
+    });
+  }
+
   async setConnected(connected) {
     this.isConnected = connected;
     this.disconnectedAt = (connected ? null : new Date());
 
+    if (!this.connected) this.connectionId = null;
+
     await this.save();
+    await this.reload();
   }
 
   async setLocale(locale) {
@@ -204,6 +223,16 @@ class Player extends Model {
     this.username = username;
 
     await this.save();
+  }
+
+  async setConnectionId(connectionId) {
+    this.connectionId = connectionId;
+
+    await this.save();
+  }
+
+  toString() {
+    return `${this.username} (id=${this.id})`;
   }
 }
 

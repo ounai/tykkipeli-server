@@ -1,8 +1,11 @@
 'use strict';
 
+const chalk = require('chalk');
+
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const ChatRoomLanguage = require('../../../../db/models/ChatRoomLanguage');
+const OutSayPacket = require('../../out/lobby/SayPacket');
 
 const log = require('../../../../Logger')('SayPacket');
 
@@ -21,9 +24,12 @@ class SayPacket extends InPacket {
     const chatRoomLanguage = await ChatRoomLanguage.findById(chatRoomLanguageId);
 
     if (chatRoomLanguage) {
-      log.debug('Player', player.username, `(id=${player.id}) in chat room ${chatRoomLanguage.name}:`, message);
+      log.debug('Player', chalk.magenta(player.toString()), `in chat room ${chatRoomLanguage.name}:`, chalk.cyan(message));
 
-      // TODO broadcast message
+      const otherPlayers = await player.findOthersByGameState('LOBBY');
+      const packet = new OutSayPacket(chatRoomLanguage, player.username, message);
+
+      this.server.broadcast(otherPlayers, packet);
     } else {
       throw new Error(`Invalid chat room language id ${chatRoomLanguageId}`);
     }

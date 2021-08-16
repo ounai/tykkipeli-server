@@ -6,6 +6,7 @@ const log = require('../Logger')('PacketHandler');
 const { getFilenamesInDirectory } = require('../Utils');
 
 class PacketHandler {
+  #server;
   #packetHandlers;
 
   async #handlePacketWithHandler(connection, packet, packetHandler) {
@@ -36,13 +37,14 @@ class PacketHandler {
     for (const filename of getFilenamesInDirectory(`${packetHandlersPath}`, 'js')) {
       log.debug('Registering packet', filename);
 
-      const PacketHandler = require.main.require(`${packetHandlersPath}/${filename}`);
+      const Handler = require.main.require(`${packetHandlersPath}/${filename}`);
 
-      this.#packetHandlers.push(new PacketHandler());
+      this.#packetHandlers.push(new Handler(this.#server));
     }
   }
 
-  constructor(...packetHandlersPaths) {
+  constructor(server, ...packetHandlersPaths) {
+    this.#server = server;
     this.#packetHandlers = [];
 
     for (const packetHandlersPath of packetHandlersPaths) {
