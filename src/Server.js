@@ -88,11 +88,13 @@ class Server {
       for (const player of players) {
         if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
 
-        log.debug('Sending', packet.constructor.name, 'to', chalk.magenta(player.toString()));
+        if (player.isConnected) {
+          log.debug('Sending', packet.constructor.name, 'to', chalk.magenta(player.toString()));
 
-        const playerConnection = this.#connectionHandler.getPlayerConnection(player);
-
-        packet.write(playerConnection);
+          packet.write(this.#connectionHandler.getPlayerConnection(player));
+        } else {
+          log.debug('Not sending', packet.constructor.name, 'to', chalk.magenta(player.toString()), '(player not connected)');
+        }
       }
     }
   }

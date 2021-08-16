@@ -64,7 +64,11 @@ class ConnectionHandler {
   getPlayerConnection(player) {
     if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
 
-    if (this.#connections[player.id]) return this.#connections[player.id];
+    if (typeof(player.connectionId) !== 'number' || isNaN(player.connectionId)) {
+      throw new Error(`Player has invalid connection id: ${player.connectionId}`);
+    }
+
+    if (this.#connections[player.connectionId]) return this.#connections[player.connectionId];
     else throw new Error(`Could not find connection for player ${player}`);
   }
 }

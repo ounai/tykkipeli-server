@@ -67,6 +67,11 @@ const columns = {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0
+  },
+  hasLoggedIn: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
   }
 };
 
@@ -227,6 +232,12 @@ class Player extends Model {
 
   async setConnectionId(connectionId) {
     this.connectionId = connectionId;
+
+    await this.save();
+  }
+
+  async setHasLoggedIn(hasLoggedIn) {
+    this.hasLoggedIn = hasLoggedIn;
 
     await this.save();
   }

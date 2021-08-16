@@ -12,7 +12,8 @@ const StatusPacket = require('../out/StatusPacket');
 const OwnJoinPacket = require('../out/lobby/OwnJoinPacket');
 const NumberOfUsersPacket = require('../out/lobby/NumberOfUsersPacket');
 const GameListFullPacket = require('../out/lobby/GameListFullPacket');
-//const UsersPacket = require('../out/lobby/UsersPacket');
+const UsersPacket = require('../out/lobby/UsersPacket');
+const JoinPacket = require('../out/lobby/JoinPacket');
 //const ServerSayPacket = require('../out/lobby/ServerSayPacket');
 
 const log = require('../../../Logger')('LoginPacket');
@@ -47,14 +48,27 @@ class LoginPacket extends InPacket {
 
     await player.setGameState(await GameState.findByName('LOBBY'));
 
-    new BasicInfoPacket(player).write(connection);
-    new StatusPacket('lobby').write(connection);
-    new OwnJoinPacket(player).write(connection);
-    new NumberOfUsersPacket(player).write(connection);
+    if (!player.hasLoggedIn) {
+      log.debug('First LoginPacket, sending basic info');
+
+      new BasicInfoPacket(player).write(connection);
+      new StatusPacket('lobby').write(connection);
+      new OwnJoinPacket(player).write(connection);
+      new NumberOfUsersPacket(player).write(connection);
+
+      await player.setHasLoggedIn(true);
+    } else {
+      log.debug('Player has logged in before, not resending basic info again');
+    }
+
+    const otherPlayersInLobby = await player.findOthersByGameState('LOBBY');
+
     new GameListFullPacket().write(connection);
+    new UsersPacket(player, otherPlayersInLobby).write(connection);
+
+    this.server.broadcast(otherPlayersInLobby, new JoinPacket(player));
 
     // TODO
-    //   lobby users,
     //   lobby serversay <motd>
     //   broadcast lobby join
   }

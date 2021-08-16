@@ -19,17 +19,21 @@ class OldPacket extends InPacket {
 
     const player = await Player.findById(packet.getNumber(1));
 
-    if (!player.isConnected) {
-      connection.playerId = player.id;
+    if (!player || !(player instanceof Player)) {
+      if (!player.isConnected) {
+        connection.playerId = player.id;
 
-      await player.setConnected(true);
-      await player.setConnectionId(connection.id);
+        await player.setConnected(true);
+        await player.setConnectionId(connection.id);
 
-      log.debug(`Reconnected old player (id=${player.id}, connectionId=${player.connectionId})`);
+        log.debug(`Reconnected old player (id=${player.id}, connectionId=${player.connectionId})`);
 
-      new ReconnectOKPacket().write(connection);
+        new ReconnectOKPacket().write(connection);
+      } else {
+        throw new Error(`Player ${player.toString()} tried to reconnect but is not disconnected!`);
+      }
     } else {
-      throw new Error(`Player ${player.id} tried to reconnect but is not disconnected!`);
+      throw new Error(`Invalid player ${player} for connection ${connection.id}`);
     }
   }
 }
