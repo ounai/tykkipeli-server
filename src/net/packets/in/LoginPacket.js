@@ -1,11 +1,9 @@
 'use strict';
 
-const chalk = require('chalk');
-
-const Player = require('../../../db/models/Player');
 const GameState = require('../../../db/models/GameState');
 const InPacket = require('./InPacket');
 const PacketType = require('../../PacketType');
+const Broadcast = require('../../Broadcast');
 
 const BasicInfoPacket = require('../out/BasicInfoPacket');
 const StatusPacket = require('../out/StatusPacket');
@@ -22,19 +20,6 @@ class LoginPacket extends InPacket {
   type = PacketType.DATA;
   usesPlayer = true;
 
-  // TODO move
-  async #requestUsername(player, username) {
-    log.debug('Client requesting username', chalk.cyan(username));
-
-    if (await Player.isUsernameInUse(username)) {
-      log.debug(`Username not set, "${chalk.cyan(username)}" already in use!`);
-    } else {
-      await player.setUsername(username);
-
-      log.debug(`Username "${chalk.cyan(username)}" set!`);
-    }
-  }
-
   match(packet) {
     return packet.startsWith('login');
   }
@@ -43,7 +28,7 @@ class LoginPacket extends InPacket {
     const username = packet.getString(1);
 
     if (typeof(username) === 'string' && username.length > 0 && username !== '-') {
-      await this.#requestUsername(player, username);
+      await player.requestUsername(username);
     }
 
     await player.setGameState(await GameState.findByName('LOBBY'));
@@ -66,7 +51,7 @@ class LoginPacket extends InPacket {
     new GameListFullPacket().write(connection);
     new UsersPacket(player, otherPlayersInLobby).write(connection);
 
-    this.server.broadcast(otherPlayersInLobby, new JoinPacket(player));
+    new Broadcast(otherPlayersInLobby, new JoinPacket(player), this.server).writeAll();
 
     // TODO
     //   lobby serversay <motd>

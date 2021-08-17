@@ -1,10 +1,12 @@
 'use strict';
 
 const { Model, DataTypes, Op } = require('sequelize');
+const chalk = require('chalk');
 
 const GameState = require('./GameState');
 
 const { getRandomInt } = require('../../Utils');
+const log = require('../../Logger')('Player');
 
 const columns = {
   connectionId: {
@@ -206,7 +208,6 @@ class Player extends Model {
     if (!this.connected) this.connectionId = null;
 
     await this.save();
-    await this.reload();
   }
 
   async setLocale(locale) {
@@ -240,6 +241,18 @@ class Player extends Model {
     this.hasLoggedIn = hasLoggedIn;
 
     await this.save();
+  }
+
+  async requestUsername(username) {
+    log.debug('Player', this.id, 'requests username', chalk.cyan(username));
+
+    if (await Player.isUsernameInUse(username)) {
+      log.debug(`Username not set, "${chalk.cyan(username)}" already in use!`);
+    } else {
+      await this.setUsername(username);
+
+      log.debug(`Username "${chalk.cyan(username)}" set!`);
+    }
   }
 
   toString() {

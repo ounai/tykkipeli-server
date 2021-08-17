@@ -8,9 +8,8 @@ const Player = require('../db/models/Player');
 const log = require('../Logger')('ConnHandler');
 
 class ConnectionHandler {
-  ip;
-  port;
-
+  #ip;
+  #port;
   #tcp;
   #connections;
   #nextConnectionId;
@@ -22,27 +21,32 @@ class ConnectionHandler {
     delete this.#connections[connectionId];
   }
 
+  #onSocket(socket) {
+    if (typeof(this.#onConnectionListener) === 'function') {
+      const connectionId = this.#nextConnectionId++;
+
+      log.debug('Creating connection', connectionId);
+
+      const connection = new Connection(connectionId, socket, this.#onDisconnect.bind(this, connectionId));
+
+      this.#connections[connectionId] = connection;
+
+      this.#onConnectionListener(connection);
+    }
+  }
+
   constructor(ip, port) {
-    this.ip = ip;
-    this.port = port;
+    this.#ip = ip;
+    this.#port = port;
 
-    const onSocket = socket => {
-      if (typeof(this.#onConnectionListener) === 'function') {
-        const connectionId = this.#nextConnectionId++;
-
-        log.debug('Creacting connection', connectionId);
-
-        const connection = new Connection(connectionId, socket, this.#onDisconnect.bind(this, connectionId));
-
-        this.#connections[connectionId] = connection;
-
-        this.#onConnectionListener(connection);
-      }
-    };
-
-    this.#tcp = net.createServer(onSocket);
     this.#connections = {};
     this.#nextConnectionId = 1;
+
+    this.#tcp = net.createServer(this.#onSocket.bind(this));
+  }
+
+  get connections() {
+    return Object.values(this.#connections);
   }
 
   onConnection(listener) {
@@ -56,8 +60,8 @@ class ConnectionHandler {
   listen() {
     log.info('Initializing connection listener...');
 
-    this.#tcp.listen(this.port, this.ip, () => {
-      log.info(`Listening on ${this.ip}:${this.port}`);
+    this.#tcp.listen(this.#port, this.#ip, () => {
+      log.info(`Listening on ${this.#ip}:${this.#port}`);
     });
   }
 

@@ -7,7 +7,7 @@ const Database = require('./db/Database');
 const Player = require('./db/models/Player');
 const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
 const PacketHandler = require('./net/PacketHandler');
-const OutPacket = require('./net/packets/out/OutPacket');
+const Pinger = require('./net/Pinger');
 
 const log = require('./Logger')('Server');
 
@@ -17,15 +17,16 @@ class Server {
   #packetHandler;
   #maxPlayers;
 
-  async #onDisconnect(connection) {
+  async #onDisconnect(connection, deletePlayer = false) {
     log.debug('Connection disconnected');
 
     const player = await Player.findById(connection.playerId);
 
     if (player) {
-      player.setConnected(false);
+      if (deletePlayer) await player.destroy();
+      else await player.setConnected(false);
 
-      log.info('Player', chalk.magenta(player.toString()), 'disconnected');
+      log.info('Player', chalk.magenta(player.toString()), (deletePlayer ? 'deleted' : 'disconnected'));
     }
   }
 
@@ -43,12 +44,12 @@ class Server {
     }
 
     connection.onPacket(this.#packetHandler.onPacket.bind(this.#packetHandler, connection));
-    connection.onDisconnect(this.#onDisconnect.bind(this, connection));
+    connection.onDisconnect(this.#onDisconnect.bind(this, connection, true));
     connection.handshake();
   }
 
   async #init(config) {
-    const { ip, port, maxPlayers } = config.server;
+    const { ip, port, maxPlayers, pingIntervalSeconds } = config.server;
 
     if (typeof(ip) !== 'string') throw new Error(`Invalid ip ${ip}`);
     if (typeof(port) !== 'number' || isNaN(port)) throw new Error(`Invalid port ${port}`);
@@ -67,6 +68,8 @@ class Server {
 
     this.#connectionHandler = new ConnectionHandler(ip, port);
     this.#connectionHandler.onConnection(this.#onConnect.bind(this));
+
+    new Pinger(this, pingIntervalSeconds).start();
   }
 
   constructor(config, afterInitCallback) {
@@ -75,28 +78,12 @@ class Server {
     this.#init(config).then(() => typeof(afterInitCallback) === 'function' && afterInitCallback(this));
   }
 
-  listen() {
-    this.#connectionHandler.listen();
+  get connectionHandler() {
+    return this.#connectionHandler;
   }
 
-  broadcast(players, packet) {
-    if (!(packet instanceof OutPacket)) throw new Error(`Invalid outgoing packet ${packet}`);
-
-    if (players.length === 0) {
-      log.debug(`Not broadcasting ${packet.constructor.name}, empty audience`);
-    } else {
-      for (const player of players) {
-        if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
-
-        if (player.isConnected) {
-          log.debug('Sending', packet.constructor.name, 'to', chalk.magenta(player.toString()));
-
-          packet.write(this.#connectionHandler.getPlayerConnection(player));
-        } else {
-          log.debug('Not sending', packet.constructor.name, 'to', chalk.magenta(player.toString()), '(player not connected)');
-        }
-      }
-    }
+  listen() {
+    this.#connectionHandler.listen();
   }
 }
 

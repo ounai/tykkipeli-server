@@ -19,7 +19,7 @@ class OldPacket extends InPacket {
 
     const player = await Player.findById(packet.getNumber(1));
 
-    if (!player || !(player instanceof Player)) {
+    if (player instanceof Player) {
       if (!player.isConnected) {
         connection.playerId = player.id;
 
