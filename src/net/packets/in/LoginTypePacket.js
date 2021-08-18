@@ -8,18 +8,17 @@ const log = require('../../../Logger')('LoginTypePacket');
 
 class LoginTypePacket extends InPacket {
   type = PacketType.DATA;
-  usesPlayer = true;
 
   match(packet) {
     return packet.startsWith('logintype');
   }
 
-  handle(connection, packet, player) {
+  async handle(connection, packet) {
     const registered = (packet.getString(1) === 'reg');
 
     log.debug('Player registered:', registered);
 
-    player.setRegistered(registered);
+    (await connection.getPlayer()).setRegistered(registered);
 
     new StatusPacket('login').write(connection);
   }

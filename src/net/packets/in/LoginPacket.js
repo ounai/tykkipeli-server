@@ -18,13 +18,14 @@ const log = require('../../../Logger')('LoginPacket');
 
 class LoginPacket extends InPacket {
   type = PacketType.DATA;
-  usesPlayer = true;
 
   match(packet) {
     return packet.startsWith('login');
   }
 
-  async handle(connection, packet, player) {
+  async handle(connection, packet) {
+    const player = await connection.getPlayer();
+
     const username = packet.getString(1);
 
     if (typeof(username) === 'string' && username.length > 0 && username !== '-') {

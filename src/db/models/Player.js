@@ -74,6 +74,10 @@ const columns = {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false
+  },
+  lastPong: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 };
 
@@ -257,6 +261,12 @@ class Player extends Model {
 
   async isGameState(gameStateName) {
     return (await this.getGameState()).name === gameStateName;
+  }
+
+  async updateLastPong() {
+    this.lastPong = new Date();
+
+    await this.save();
   }
 
   toString() {

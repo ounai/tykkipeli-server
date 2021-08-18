@@ -1,35 +1,11 @@
 'use strict';
 
-const Player = require('../db/models/Player');
-
 const log = require('../Logger')('PacketHandler');
 const { getFilenamesInDirectory } = require('../Utils');
 
 class PacketHandler {
   #server;
   #packetHandlers;
-
-  async #handlePacketWithHandler(connection, packet, packetHandler) {
-    if (typeof(packetHandler.usesPlayer) !== 'boolean' || !packetHandler.usesPlayer) {
-      // Does not use player
-
-      await packetHandler.handle(connection, packet);
-    } else {
-      // Uses player
-
-      if (typeof(connection.playerId) !== 'number') {
-        throw new Error(`Invalid player id ${connection.playerId}`);
-      }
-
-      const player = await Player.findById(connection.playerId);
-
-      log.debug('Fetched player', player.id, 'for packet handler', packetHandler.constructor.name);
-
-      if (!player) throw new Error(`No player found but ${packetHandler.constructor.name} requires one!`);
-      else if (!player.isConnected) throw new Error(`Cannot handle ${packetHandler.constructor.name}, player is not connected!`);
-      else await packetHandler.handle(connection, packet, player);
-    }
-  }
 
   #registerPacketHandlers(packetHandlersPath) {
     log.info('Registering packet handlers...');
@@ -61,7 +37,7 @@ class PacketHandler {
       if (packet.type === packetHandler.type && packetHandler.match(packet)) {
         log.debug('Packet matches', packetHandler.constructor.name);
 
-        await this.#handlePacketWithHandler(connection, packet, packetHandler);
+        await packetHandler.handle(connection, packet);
 
         log.info(packetHandler.constructor.name, 'handled!');
 

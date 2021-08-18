@@ -1,6 +1,7 @@
 'use strict';
 
 const Player = require('../../../db/models/Player');
+const GameState = require('../../../db/models/GameState');
 const IDPacket = require('../out/IDPacket');
 const PacketType = require('../../PacketType');
 const InPacket = require('./InPacket');
@@ -21,6 +22,7 @@ class NewPacket extends InPacket {
 
     connection.playerId = player.id;
 
+    await player.setGameState(await GameState.findByName('NONE'));
     await player.setConnected(true);
     await player.setConnectionId(connection.id);
 

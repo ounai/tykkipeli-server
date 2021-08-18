@@ -12,19 +12,20 @@ const log = require('../../../../Logger')('SayPacket');
 
 class SayPacket extends InPacket {
   type = PacketType.DATA;
-  usesPlayer = true;
 
   match(packet) {
     return packet.startsWith('lobby', 'say');
   }
 
-  async handle(connection, packet, player) {
+  async handle(connection, packet) {
     const chatRoomLanguageId = packet.getNumber(2);
     const message = packet.getString(3);
 
     const chatRoomLanguage = await ChatRoomLanguage.findById(chatRoomLanguageId);
 
     if (chatRoomLanguage) {
+      const player = await connection.getPlayer();
+
       log.debug('Player', chalk.magenta(player.toString()), `in chat room ${chatRoomLanguage.name}:`, chalk.cyan(message));
 
       const otherPlayers = await player.findOthersByGameState('LOBBY');

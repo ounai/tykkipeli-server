@@ -15,7 +15,7 @@ class Database {
         await model.create(row);
       }
 
-      log.debug('Wrote', rows.length, 'rows to model', model.name);
+      log.debug('Wrote', rows.length, 'rows to table', model.name);
     }
   }
 

@@ -4,6 +4,7 @@ const chalk = require('chalk');
 
 const Packet = require('./Packet');
 const PacketType = require('./PacketType');
+const Player = require('../db/models/Player');
 
 const log = require('../Logger')('Connection');
 const { getRandomInt } = require('../Utils');
@@ -18,7 +19,7 @@ class Connection {
   #lastPacketReceived = Number.NEGATIVE_INFINITY;
 
   #id;
-  playerId;
+  #playerId;
 
   async #socketOnData(buffer) {
     log.debug(
@@ -86,6 +87,10 @@ class Connection {
     socket.on('error', this.#socketOnError.bind(this));
   }
 
+  set playerId(playerId) {
+    this.#playerId = playerId;
+  }
+
   get id() {
     return this.#id;
   }
@@ -150,6 +155,19 @@ class Connection {
     if (typeof(this.#afterDisconnectCallback) === 'function') {
       this.#afterDisconnectCallback();
     }
+  }
+
+  async getPlayer() {
+    if (typeof(this.#playerId) !== 'number') {
+      throw new Error(`Invalid player id ${this.#playerId}`);
+    }
+
+    const player = await Player.findById(this.#playerId);
+
+    if (!player) throw new Error(`Player not found with id ${this.#playerId}`);
+    else if (!player.isConnected) throw new Error(`Player ${player.toString} is not connected`);
+
+    return player;
   }
 }
 
