@@ -2,12 +2,16 @@
 
 const chalk = require('chalk');
 
-const ConnectionHandler = require('./net/ConnectionHandler');
 const Database = require('./db/Database');
 const Player = require('./db/models/Player');
-const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
+
+const ConnectionHandler = require('./net/ConnectionHandler');
 const PacketHandler = require('./net/PacketHandler');
 const Pinger = require('./net/Pinger');
+const Broadcast = require('./net/Broadcast');
+
+const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
+const PartPacket = require('./net/packets/out/lobby/PartPacket');
 
 const log = require('./Logger')('Server');
 
@@ -16,6 +20,7 @@ class Server {
   #database;
   #packetHandler;
   #maxPlayers;
+  #motd;
 
   async #onDisconnect(connection, deletePlayer = false) {
     log.debug('Connection disconnected');
@@ -23,6 +28,11 @@ class Server {
     const player = await Player.findById(connection.playerId);
 
     if (player) {
+      if (player.isGameState('LOBBY')) {
+        // Send parting packet to others in lobby
+        new Broadcast(await player.findOthersByGameState('LOBBY'), new PartPacket(player, 1), this).writeAll();
+      }
+
       if (deletePlayer) await player.destroy();
       else await player.setConnected(false);
 
@@ -49,13 +59,15 @@ class Server {
   }
 
   async #init(config) {
-    const { ip, port, maxPlayers, pingIntervalSeconds } = config.server;
+    const { ip, port, maxPlayers, pingIntervalSeconds, motd } = config.server;
 
     if (typeof(ip) !== 'string') throw new Error(`Invalid ip ${ip}`);
     if (typeof(port) !== 'number' || isNaN(port)) throw new Error(`Invalid port ${port}`);
 
     if (typeof(maxPlayers) === 'number' && !isNaN(maxPlayers)) this.#maxPlayers = maxPlayers;
     else this.#maxPlayers = null;
+
+    if (typeof(motd) === 'string' && motd.length > 0) this.#motd = motd;
 
     this.#packetHandler = new PacketHandler(
       this,
@@ -80,6 +92,10 @@ class Server {
 
   get connectionHandler() {
     return this.#connectionHandler;
+  }
+
+  get motd() {
+    return this.#motd ?? null;
   }
 
   listen() {

@@ -28,9 +28,13 @@ class Pinger {
   }
 
   start() {
-    log.debug('Start pinging');
+    if (this.#intervalId === null) {
+      log.debug('Start pinging');
 
-    this.#intervalId = setInterval(this.#ping.bind(this), this.#intervalSeconds * 1000);
+      this.#intervalId = setInterval(this.#ping.bind(this), this.#intervalSeconds * 1000);
+    } else {
+      log.debug('Cannot start pinging, already running');
+    }
   }
 
   stop() {

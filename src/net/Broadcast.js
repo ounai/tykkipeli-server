@@ -3,7 +3,6 @@
 const chalk = require('chalk');
 
 const OutPacket = require('./packets/out/OutPacket');
-const Server = require('../Server');
 const Player = require('../db/models/Player');
 
 const log = require('../Logger')('Broadcast');
@@ -15,7 +14,7 @@ class Broadcast {
 
   constructor(players, packet, server) {
     if (!(packet instanceof OutPacket)) throw new Error(`Invalid packet ${packet}`);
-    if (!(server instanceof Server)) throw new Error(`Invalid server ${server}`);
+    if (!server) throw new Error(`Invalid server ${server}`);
 
     this.#players = players;
     this.#packet = packet;
@@ -34,7 +33,11 @@ class Broadcast {
         if (player.isConnected) {
           log.debug('Sending', this.#packet.constructor.name, 'to', chalk.magenta(player.toString()));
 
-          this.#packet.write(this.#server.connectionHandler.getPlayerConnection(player));
+          try {
+            this.#packet.write(this.#server.connectionHandler.getPlayerConnection(player));
+          } catch (err) {
+            log.error(`Could not write broadcast to player ${chalk.magenta(player.toString())}:\n`, err);
+          }
         } else {
           log.debug('Not sending', this.#packet.constructor.name, 'to', chalk.magenta(player.toString()), '(player not connected)');
         }

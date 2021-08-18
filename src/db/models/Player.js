@@ -255,6 +255,10 @@ class Player extends Model {
     }
   }
 
+  async isGameState(gameStateName) {
+    return (await this.getGameState()).name === gameStateName;
+  }
+
   toString() {
     return `${this.username} (id=${this.id})`;
   }

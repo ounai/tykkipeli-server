@@ -12,7 +12,7 @@ const NumberOfUsersPacket = require('../out/lobby/NumberOfUsersPacket');
 const GameListFullPacket = require('../out/lobby/GameListFullPacket');
 const UsersPacket = require('../out/lobby/UsersPacket');
 const JoinPacket = require('../out/lobby/JoinPacket');
-//const ServerSayPacket = require('../out/lobby/ServerSayPacket');
+const ServerSayPacket = require('../out/lobby/ServerSayPacket');
 
 const log = require('../../../Logger')('LoginPacket');
 
@@ -41,6 +41,12 @@ class LoginPacket extends InPacket {
       new OwnJoinPacket(player).write(connection);
       new NumberOfUsersPacket(player).write(connection);
 
+      if (typeof(this.server.motd) === 'string' && this.server.motd.length > 0) {
+        log.debug('Writing motd:', this.server.motd);
+
+        new ServerSayPacket(this.server.motd).write(connection);
+      }
+
       await player.setHasLoggedIn(true);
     } else {
       log.debug('Player has logged in before, not resending basic info again');
@@ -52,10 +58,6 @@ class LoginPacket extends InPacket {
     new UsersPacket(player, otherPlayersInLobby).write(connection);
 
     new Broadcast(otherPlayersInLobby, new JoinPacket(player), this.server).writeAll();
-
-    // TODO
-    //   lobby serversay <motd>
-    //   broadcast lobby join
   }
 }
 
