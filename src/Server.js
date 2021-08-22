@@ -1,19 +1,19 @@
 'use strict';
 
-const chalk = require('chalk');
-
 const Database = require('./db/Database');
 const Player = require('./db/models/Player');
-
+const DisconnectEvent = require('./events/player/DisconnectEvent');
 const ConnectionHandler = require('./net/ConnectionHandler');
 const PacketHandler = require('./net/PacketHandler');
 const Pinger = require('./net/Pinger');
-const Broadcast = require('./net/Broadcast');
-
 const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
-const PartPacket = require('./net/packets/out/lobby/PartPacket');
 
 const log = require('./Logger')('Server');
+
+const inPacketPaths = [
+  './src/net/packets/in',
+  './src/net/packets/in/lobby'
+];
 
 class Server {
   #connectionHandler;
@@ -22,39 +22,34 @@ class Server {
   #maxPlayers;
   #motd;
 
-  async #onDisconnect(connection, deletePlayer = false) {
-    log.debug('Connection disconnected');
-
-    const player = await Player.findById(connection.playerId);
-
-    if (player) {
-      if (player.isGameState('LOBBY')) {
-        // Send parting packet to others in lobby
-        new Broadcast(await player.findOthersByGameState('LOBBY'), new PartPacket(player, 1), this).writeAll();
-      }
-
-      if (deletePlayer) await player.destroy();
-      else await player.setConnected(false);
-
-      log.info('Player', chalk.magenta(player.toString()), (deletePlayer ? 'deleted' : 'disconnected'));
-    }
-  }
-
-  async #onConnect(connection) {
-    if (this.#maxPlayers !== null) {
+  async #isFull() {
+    if (this.#maxPlayers === null) return false;
+    else {
       const connectedPlayers = await Player.countConnected();
 
       log.info('Player count before join:', connectedPlayers, '/', this.#maxPlayers);
 
-      if (connectedPlayers >= this.#maxPlayers) {
-        log.info('Max number of players reached, not accepting connection');
+      return (connectedPlayers >= this.#maxPlayers);
+    }
+  }
 
-        return new ServerFullPacket().write(connection);
-      }
+  async #onDisconnect(connection) {
+    log.debug('Connection', connection.id, 'disconnected');
+
+    const player = await connection.getPlayer();
+
+    if (player) new DisconnectEvent(this, player);
+  }
+
+  async #onConnect(connection) {
+    if (await this.#isFull()) {
+      log.info('Max number of players reached, not accepting connection');
+
+      return new ServerFullPacket().write(connection);
     }
 
     connection.onPacket(this.#packetHandler.onPacket.bind(this.#packetHandler, connection));
-    connection.onDisconnect(this.#onDisconnect.bind(this, connection, true));
+    connection.onDisconnect(this.#onDisconnect.bind(this, connection));
     connection.handshake();
   }
 
@@ -69,11 +64,7 @@ class Server {
 
     if (typeof(motd) === 'string' && motd.length > 0) this.#motd = motd;
 
-    this.#packetHandler = new PacketHandler(
-      this,
-      './src/net/packets/in',
-      './src/net/packets/in/lobby'
-    );
+    this.#packetHandler = new PacketHandler(this, ...inPacketPaths);
 
     this.#database = new Database(config.database);
     await this.#database.init();

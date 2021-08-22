@@ -7,7 +7,6 @@ const PacketType = require('./PacketType');
 const Player = require('../db/models/Player');
 
 const log = require('../Logger')('Connection');
-const { getRandomInt } = require('../Utils');
 
 class Connection {
   #socket;
@@ -101,15 +100,7 @@ class Connection {
   }
 
   handshake() {
-    const randomInt = getRandomInt(1000000000);
-
-    this.#socket.write(
-      'h 1\r\n'
-        + `c io ${randomInt}\r\n`
-        + 'c crt 25\r\n'
-        + 'c ctr\r\n',
-      'utf8'
-    );
+    this.#socket.write('h 1\nc ctr\n', 'utf8');
   }
 
   write(data, encoding = 'utf8') {
@@ -158,9 +149,7 @@ class Connection {
   }
 
   async getPlayer() {
-    if (typeof(this.#playerId) !== 'number') {
-      throw new Error(`Invalid player id ${this.#playerId}`);
-    }
+    if (typeof(this.#playerId) !== 'number') return null;
 
     const player = await Player.findById(this.#playerId);
 

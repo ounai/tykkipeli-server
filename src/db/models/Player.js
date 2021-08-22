@@ -184,9 +184,8 @@ class Player extends Model {
   async countOthersByGameState(...gameStateNames) {
     return await Player.count({
       where: {
-        id: {
-          [Op.not]: this.id
-        },
+        isConnected: true,
+        id: { [Op.not]: this.id },
         '$GameState.name$': gameStateNames
       },
       include: GameState
@@ -196,9 +195,8 @@ class Player extends Model {
   async findOthersByGameState(...gameStateNames) {
     return await Player.findAll({
       where: {
-        id: {
-          [Op.not]: this.id
-        },
+        isConnected: true,
+        id: { [Op.not]: this.id },
         '$GameState.name$': gameStateNames
       },
       include: GameState

@@ -1,5 +1,9 @@
 'use strict';
 
+const chalk = require('chalk');
+
+const InPacket = require('./packets/in/InPacket');
+
 const log = require('../Logger')('PacketHandler');
 const { getFilenamesInDirectory } = require('../Utils');
 
@@ -14,8 +18,10 @@ class PacketHandler {
       log.debug('Registering packet', filename);
 
       const Handler = require.main.require(`${packetHandlersPath}/${filename}`);
+      const handler = new Handler(this.#server);
 
-      this.#packetHandlers.push(new Handler(this.#server));
+      if (handler instanceof InPacket) this.#packetHandlers.push(handler);
+      else log.error('Invalid packet handler encountered:', handler);
     }
   }
 
@@ -45,7 +51,7 @@ class PacketHandler {
       }
     }
 
-    if (!handled) log.debugError('Packet not handled!', packet);
+    if (!handled) log.debugError('Packet not handled!', chalk.magenta(packet.type.name), packet.args);
   }
 }
 

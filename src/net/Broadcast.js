@@ -21,7 +21,7 @@ class Broadcast {
     this.#server = server;
   }
 
-  writeAll() {
+  async writeAll() {
     if (this.#players.length === 0) {
       log.debug(`Not broadcasting ${this.#packet.constructor.name}, empty audience`);
     } else {
@@ -30,11 +30,15 @@ class Broadcast {
       for (const player of this.#players) {
         if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
 
+        await player.reload();
+
         if (player.isConnected) {
           log.debug('Sending', this.#packet.constructor.name, 'to', chalk.magenta(player.toString()));
 
           try {
-            this.#packet.write(this.#server.connectionHandler.getPlayerConnection(player));
+            const playerConnection = this.#server.connectionHandler.getPlayerConnection(player);
+
+            this.#packet.write(playerConnection);
           } catch (err) {
             log.error(`Could not write broadcast to player ${chalk.magenta(player.toString())}:\n`, err);
           }

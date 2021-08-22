@@ -1,9 +1,12 @@
 'use strict';
 
+const chalk = require('chalk');
+
 const Player = require('../../../db/models/Player');
-const ReconnectOKPacket = require('../out/ReconnectOKPacket');
 const PacketType = require('../../PacketType');
 const InPacket = require('./InPacket');
+const ReconnectOKPacket = require('../out/ReconnectOKPacket');
+const ReconnectFailedPacket = require('../out/ReconnectFailedPacket');
 
 const log = require('../../../Logger')('OldPacket');
 
@@ -26,14 +29,18 @@ class OldPacket extends InPacket {
         await player.setConnected(true);
         await player.setConnectionId(connection.id);
 
-        log.debug(`Reconnected old player (id=${player.id}, connectionId=${player.connectionId})`);
+        log.debug(`Reconnected old player (connection id=${connection.id})`);
 
         new ReconnectOKPacket().write(connection);
       } else {
-        throw new Error(`Player ${player.toString()} tried to reconnect but is not disconnected!`);
+        log.debugError('Player', chalk.magenta(player.toString()), 'tried to reconnect but is not disconnected!');
+
+        new ReconnectFailedPacket().write(connection);
       }
     } else {
-      throw new Error(`Invalid player ${player} for connection ${connection.id}`);
+      log.debugError('Invalid player', chalk.magenta(player.toString()), 'for connection', connection.id);
+
+      new ReconnectFailedPacket().write(connection);
     }
   }
 }
