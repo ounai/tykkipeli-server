@@ -5,13 +5,12 @@ const OutPacket = require('../OutPacket');
 const log = require('../../../../Logger')('PartPacket');
 
 class PartPacket extends OutPacket {
-  // TODO parting to create a game
-  // TODO parting to join a game
   constructor(player, reasonCode, gameName) {
     /*
      * Reason codes:
      *  1: leaving because of free will
      *  2: leaving because of connection problems
+     *  (no 3)
      *  4: leaving to create a game
      *  5: leaving to join a game
      */

@@ -14,13 +14,19 @@ class DisconnectEvent extends Event {
     if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
     if (!server) throw new Error(`Invalid server ${server}`);
 
-    if (player.isGameState('LOBBY')) {
+    const gameState = await player.getGameState();
+
+    if (gameState.name === 'LOBBY') {
       // Send parting packet to others in lobby
 
       const otherPlayers = await player.findOthersByGameState('LOBBY');
       const partPacket = new PartPacket(player, 1);
 
       new Broadcast(otherPlayers, partPacket, server).writeAll();
+    } else if (gameState.name === 'GAME_LOBBY') {
+      // TODO
+    } else if (gameState.name === 'GAME') {
+      // TODO
     }
 
     await player.setConnected(false);

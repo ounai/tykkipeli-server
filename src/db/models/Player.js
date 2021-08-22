@@ -140,12 +140,16 @@ class Player extends Model {
     });
   }
 
-  static async isUsernameInUse(username) {
-    return !!(await this.findOne({
+  static async findByUsername(username) {
+    return await this.findOne({
       where: {
         username
       }
-    }));
+    });
+  }
+
+  static async isUsernameInUse(username) {
+    return !!(await this.findByUsername(username));
   }
 
   #getUserInfoFlags() {
