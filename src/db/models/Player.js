@@ -78,7 +78,8 @@ const columns = {
   lastPong: {
     type: DataTypes.DATE,
     allowNull: true
-  }
+  },
+  clanName: DataTypes.STRING(16)
 };
 
 const associated = [

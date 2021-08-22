@@ -37,6 +37,10 @@ class WindMode extends Model {
   static get associated() {
     return associated;
   }
+
+  static async findById(id) {
+    return await this.findByPk(id);
+  }
 }
 
 module.exports = WindMode;

@@ -6,9 +6,9 @@ const Game = require('../../../../db/models/Game');
 class GameListFullPacket extends OutPacket {
   async #getArgs() {
     const games = await Game.findAll();
-    const gameStrings = games.map(game => game.toString());
+    const gameStrings = games.map(game => game.getGameListItem());
 
-    return ['gamelist', 'full', games.length, ...gameStrings];
+    return ['lobby', 'gamelist', 'full', games.length, ...gameStrings];
   }
 
   constructor() {

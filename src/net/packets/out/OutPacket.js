@@ -56,10 +56,18 @@ class OutPacket {
   }
 
   write(connection) {
-    log.debug(`${this.constructor.name} write(), busy:`, this.#busy);
+    return new Promise(resolve => {
+      log.debug(`${this.constructor.name} write(), busy:`, this.#busy);
 
-    if (this.#busy) this.#busyCallback = this.#writePacket.bind(this, connection);
-    else this.#writePacket(connection);
+      const writeAndResolve = async () => {
+        await this.#writePacket(connection);
+
+        resolve();
+      };
+
+      if (this.#busy) this.#busyCallback = writeAndResolve;
+      else writeAndResolve();
+    });
   }
 }
 
