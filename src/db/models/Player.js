@@ -167,7 +167,7 @@ class Player extends Model {
     );
   }
 
-  getUserInfoString(version) {
+  getUserInfoString(version = 3) {
     if (version === 3) {
       const flags = this.#getUserInfoFlags();
 
@@ -176,8 +176,8 @@ class Player extends Model {
         (flags.length === 0 ? '-' : flags),
         this.ranking,
         this.language,
-        '-', // TODO unknown
-        '-'  // TODO unknown 2: electric boogaloo
+        '-', // player card
+        '-'  // player icon
       ];
 
       return '3:' + userInfo.join('^');

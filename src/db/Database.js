@@ -19,14 +19,11 @@ class Database {
     }
   }
 
-  async #initModels(modelsPath) {
-    this.#models = {};
-
-    // Init models
+  async #loadModels(modelsPath) {
     for (const filename of getFilenamesInDirectory(modelsPath, 'js')) {
       log.debug('Loading model file', filename);
 
-      const model = require(`./models/${filename}`);
+      const model = require.main.require(`${modelsPath}/${filename}`);
       const modelName = model.name;
 
       log.debug('Init model', modelName);
@@ -92,7 +89,9 @@ class Database {
   async init() {
     log.info('Connecting to the database...');
 
-    await this.#initModels('./src/db/models');
+    this.#models = {};
+
+    await this.#loadModels('./src/db/models');
     await this.#initAssociations();
     await this.#setupModels();
 
