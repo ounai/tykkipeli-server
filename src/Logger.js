@@ -13,7 +13,20 @@ class Logger {
   constructor(title) {
     if (debug) {
       if (typeof(title) !== 'string') this.title = null;
-      else this.title = title.slice(0, maxTitleLength);
+      else {
+        this.title = title.slice(0, maxTitleLength);
+
+        if (title.length > maxTitleLength) {
+          console.log(
+            '[',
+            chalk.red('Logger warning: Title'),
+            chalk.magenta(title),
+            chalk.red('is too long, truncated to'),
+            chalk.magenta(this.title),
+            ']'
+          );
+        }
+      }
     } else {
       this.title = null;
     }
