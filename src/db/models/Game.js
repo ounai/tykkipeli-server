@@ -57,6 +57,10 @@ class Game extends Model {
     return associated;
   }
 
+  static async findById(id) {
+    return await this.findByPk(id);
+  }
+
   get isPasswordRequired() {
     return this.password !== null;
   }
@@ -113,6 +117,10 @@ class Game extends Model {
     ];
   }
 
+  async getGameListItemString() {
+    return (await this.getGameListItem()).join('\t');
+  }
+
   async getGameInfo() {
     const isPasswordRequired = (this.isPasswordRequired ? 't' : 'f');
     const registeredPlayersOnly = (this.registeredPlayersOnly ? 1 : 0);
@@ -135,6 +143,10 @@ class Game extends Model {
       dudsEnabled,
       scoringModeId
     ];
+  }
+
+  toString() {
+    return `${this.name} (id=${this.id})`;
   }
 }
 

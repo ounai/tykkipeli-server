@@ -23,15 +23,11 @@ class PacketType {
     packetTypes[code] = this;
   }
 
-  get name() {
+  toString() {
     return `PacketType.${this.#name}`;
   }
 
-  get code() {
-    return this.#code;
-  }
-
-  toString() {
+  valueOf() {
     return this.#code;
   }
 }

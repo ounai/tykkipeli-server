@@ -14,7 +14,7 @@ class Packet {
     }
 
     return [
-      PacketType.DATA,
+      PacketType.DATA.valueOf(),
       this.sequenceNumber,
       this.args.join('\t')
     ].join(' ');
@@ -26,7 +26,7 @@ class Packet {
     }
 
     return [
-      PacketType.COMMAND,
+      PacketType.COMMAND.valueOf(),
       ...this.args
     ].join(' ');
   }

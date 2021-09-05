@@ -33,8 +33,13 @@ class Logger {
   }
 
   #getLeader(stream, spaces = 0) {
-    return `[${currentTimeString()}, ${stream}]`
-      + (this.title ? (' '.repeat(spaces) + ' '.repeat(maxTitleLength - this.title.length) + this.title) : '');
+    const title = (
+      this.title
+        ? (' '.repeat(spaces) + ' '.repeat(maxTitleLength - this.title.length) + this.title)
+        : ''
+    );
+
+    return `[${currentTimeString()}, ${stream}]${title}`;
   }
 
   info(...args) {

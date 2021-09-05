@@ -5,6 +5,7 @@ const chalk = require('chalk');
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Broadcast = require('../../../Broadcast');
+const PartReason = require('../../../../lobby/PartReason');
 
 const StatusPacket = require('../../out/StatusPacket');
 const GameListAddPacket = require('../../out/lobby/GameListAddPacket');
@@ -20,9 +21,9 @@ const WeaponAddingMode = require('../../../../db/models/WeaponAddingMode');
 const WindMode = require('../../../../db/models/WindMode');
 const ScoringMode = require('../../../../db/models/ScoringMode');
 
-const log = require('../../../../Logger')('CreatePacket');
+const log = require('../../../../Logger')('CreateGamePacket');
 
-class CreatePacket extends InPacket {
+class CreateGamePacket extends InPacket {
   type = PacketType.DATA;
 
   match(packet) {
@@ -64,19 +65,6 @@ class CreatePacket extends InPacket {
     const scoringMode = await ScoringMode.findById(packet.getNumber(12));
     if (!scoringMode) throw new Error(`Invalid scoring mode ${scoringMode}`);
 
-    // TODO
-    log.debug('gameName', gameName);
-    log.debug('password', password);
-    log.debug('registeredPlayersOnly', registeredPlayersOnly);
-    log.debug('maxPlayers', maxPlayers);
-    log.debug('roundCount', roundCount);
-    log.debug('weaponAddingMode', weaponAddingMode.name);
-    log.debug('playingOrderMode', playingOrderMode.name);
-    log.debug('thinkingTime', thinkingTime);
-    log.debug('windMode', windMode.name);
-    log.debug('dudsEnabled', dudsEnabled);
-    log.debug('scoringMode', scoringMode.name);
-
     const game = await Game.create({
       name: gameName,
       password,
@@ -92,8 +80,6 @@ class CreatePacket extends InPacket {
     await game.setWindMode(windMode);
     await game.setScoringMode(scoringMode);
 
-    log.debug('Game created:', game); // TODO
-
     log.info(
       'New game',
       chalk.cyan(gameName) + (password !== null ? ` (password ${chalk.cyan(password)})` : ''),
@@ -107,8 +93,6 @@ class CreatePacket extends InPacket {
       PlayerId: player.id
     });
 
-    log.debug('GamePlayer created:', gamePlayer.dataValues); // TODO
-
     await player.setGameState(await GameState.findByName('GAME_LOBBY'));
 
     new StatusPacket('game').write(connection);
@@ -118,9 +102,9 @@ class CreatePacket extends InPacket {
     const playersInLobby = await player.findOthersByGameState('LOBBY');
 
     new Broadcast(playersInLobby, new GameListAddPacket(game), this.server).writeAll();
-    new Broadcast(playersInLobby, new PartPacket(player, 4, game.name), this.server).writeAll();
+    new Broadcast(playersInLobby, new PartPacket(player, PartReason.CREATED_GAME, game.name), this.server).writeAll();
   }
 }
 
-module.exports = CreatePacket;
+module.exports = CreateGamePacket;
 

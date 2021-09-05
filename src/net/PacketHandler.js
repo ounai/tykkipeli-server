@@ -51,7 +51,7 @@ class PacketHandler {
       }
     }
 
-    if (!handled) log.debugError('Packet not handled!', chalk.magenta(packet.type.name), packet.args);
+    if (!handled) log.debugError('Packet not handled!', chalk.magenta(packet.type.toString()), packet.args);
   }
 }
 

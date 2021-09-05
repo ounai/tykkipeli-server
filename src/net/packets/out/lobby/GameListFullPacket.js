@@ -6,7 +6,11 @@ const Game = require('../../../../db/models/Game');
 class GameListFullPacket extends OutPacket {
   async #getArgs() {
     const games = await Game.findAll();
-    const gameStrings = games.map(game => game.getGameListItem());
+    const gameStrings = [];
+
+    for (const game of games) {
+      gameStrings.push(await game.getGameListItemString());
+    }
 
     return ['lobby', 'gamelist', 'full', games.length, ...gameStrings];
   }

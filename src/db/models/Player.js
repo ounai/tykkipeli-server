@@ -167,6 +167,7 @@ class Player extends Model {
     );
   }
 
+  // TODO rename to getLobbyInfoString
   getUserInfoString(version = 3) {
     if (version === 3) {
       const flags = this.#getUserInfoFlags();
@@ -184,6 +185,23 @@ class Player extends Model {
     } else {
       throw new Error(`Invalid user info string version ${version}`);
     }
+  }
+
+  // TODO rename to getGameInfoString
+  async getPlayerInfoString(includeId = true) {
+    const info = [];
+
+    if (includeId) {
+      const gamePlayer = await this.getGamePlayer();
+
+      info.push(gamePlayer.id);
+    }
+
+    info.push(this.username);
+    info.push(this.clanName ?? '-');
+    info.push('-');
+
+    return info.join('\t');
   }
 
   async countOthersByGameState(...gameStateNames) {
@@ -270,6 +288,12 @@ class Player extends Model {
     this.lastPong = new Date();
 
     await this.save();
+  }
+
+  async getGame() {
+    const gamePlayer = await this.getGamePlayer();
+
+    return await gamePlayer.getGame();
   }
 
   toString() {

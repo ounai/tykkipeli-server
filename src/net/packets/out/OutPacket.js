@@ -31,7 +31,7 @@ class OutPacket {
   }
 
   async #writePacket(connection) {
-    log.debug(`Writing packet ${this.constructor.name}:`, chalk.magenta(this.#packet.type.name), this.#packet.args);
+    log.debug(`Writing packet ${this.constructor.name}:`, chalk.magenta(this.#packet.type.toString()), this.#packet.args);
 
     if (!(this.#packet.type instanceof PacketType)) {
       throw new Error(`Invalid packet type ${this.#packet.type}`);
