@@ -1,6 +1,6 @@
 'use strict';
 
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes, Op } = require('sequelize');
 
 const columns = {
   id: {
@@ -32,6 +32,17 @@ class GamePlayer extends Model {
 
   static get associated() {
     return associated;
+  }
+
+  async findOthersInGame() {
+    return await GamePlayer.findAll({
+      where: {
+        GameId: this.GameId,
+        PlayerId: {
+          [Op.not]: this.PlayerId
+        }
+      }
+    });
   }
 }
 

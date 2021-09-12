@@ -18,9 +18,11 @@ class SayPacket extends InPacket {
   }
 
   async handle(connection, packet) {
-    const chatRoomLanguageId = packet.getNumber(2);
     const message = packet.getString(3);
 
+    if (typeof(message) !== 'string' || message.length === 0) throw new Error(`Invalid chat message ${message}`);
+
+    const chatRoomLanguageId = packet.getNumber(2);
     const chatRoomLanguage = await ChatRoomLanguage.findById(chatRoomLanguageId);
 
     if (chatRoomLanguage) {
@@ -29,9 +31,9 @@ class SayPacket extends InPacket {
       log.debug('Player', chalk.magenta(player.toString()), `in chat room ${chatRoomLanguage.name}:`, chalk.cyan(message));
 
       const otherPlayers = await player.findOthersByGameState('LOBBY');
-      const packet = new OutSayPacket(chatRoomLanguage, player.username, message);
+      const broadcastPacket = new OutSayPacket(chatRoomLanguage, player.username, message);
 
-      new Broadcast(otherPlayers, packet, this.server).writeAll();
+      new Broadcast(otherPlayers, broadcastPacket, this.server).writeAll();
     } else {
       throw new Error(`Invalid chat room language id ${chatRoomLanguageId}`);
     }

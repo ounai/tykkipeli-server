@@ -12,7 +12,8 @@ const log = require('./Logger')('Server');
 
 const inPacketPaths = [
   './src/net/packets/in',
-  './src/net/packets/in/lobby'
+  './src/net/packets/in/lobby',
+  './src/net/packets/in/game'
 ];
 
 class Server {
