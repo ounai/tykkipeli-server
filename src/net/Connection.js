@@ -15,7 +15,7 @@ class Connection {
   #afterDisconnectCallback;
 
   #lastPacketSent = null;
-  #lastPacketReceived = Number.NEGATIVE_INFINITY;
+  #lastPacketReceived = null;
 
   #id;
   #playerId;
@@ -40,7 +40,7 @@ class Connection {
         const packet = new Packet(packetString);
 
         if (packet.type === PacketType.DATA) {
-          if (packet.sequenceNumber <= this.#lastPacketReceived) {
+          if (this.#lastPacketReceived !== null && packet.sequenceNumber <= this.#lastPacketReceived) {
             return log.debug('Skipping duplicate packet!');
           }
 
@@ -52,7 +52,10 @@ class Connection {
         }
       }
     } catch (err) {
-      log.error('Error in connection, disconnecting client:', err);
+      log.error(
+        'Error in connection, disconnecting client:',
+        this.#lastPacketReceived === null ? (err.message ?? err) : err
+      );
 
       this.disconnect();
     }

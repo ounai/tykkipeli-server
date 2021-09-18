@@ -3,29 +3,29 @@
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Broadcast = require('../../../Broadcast');
-const OutSayPacket = require('../../out/game/SayPacket');
+const OutShoutPacket = require('../../out/game/ShoutPacket');
 
-class SayPacket extends InPacket {
+class ShoutPacket extends InPacket {
   type = PacketType.DATA;
 
   match(packet) {
-    return packet.startsWith('game', 'say');
+    return packet.startsWith('game', 'shout');
   }
 
   async handle(connection, packet) {
     const message = packet.getString(2);
 
-    if (typeof(message) !== 'string' || message.length === 0) throw new Error(`Invalid chat message ${message}`);
+    if (typeof(message) !== 'string' || message.length === 0) throw new Error(`Invalid shout message ${message}`);
 
     const player = await connection.getPlayer();
     const gamePlayer = await player.getGamePlayer();
     const otherGamePlayers = await gamePlayer.findOthersInGame();
 
-    const broadcastPacket = new OutSayPacket(player.username, message);
+    const broadcastPacket = new OutShoutPacket(gamePlayer.id, message);
 
     new Broadcast(otherGamePlayers, broadcastPacket, this.server).writeAll();
   }
 }
 
-module.exports = SayPacket;
+module.exports = ShoutPacket;
 
