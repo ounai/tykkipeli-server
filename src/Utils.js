@@ -24,6 +24,10 @@ class Utils {
 
     return dateTimeFormat.format(new Date());
   }
+
+  static isIP(str) {
+    return /^([0-9]{1,3}\.){3}[0-9]{1,3}$/.test(str);
+  }
 }
 
 module.exports = Utils;

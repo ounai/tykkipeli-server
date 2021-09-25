@@ -5,6 +5,8 @@ const chalk = require('chalk');
 const { currentTimeString } = require('./Utils');
 
 const debug = (process.env.NODE_ENV !== 'production');
+const disabled = (process.env.NODE_ENV === 'test')
+
 const maxTitleLength = 16;
 
 class Logger {
@@ -43,19 +45,19 @@ class Logger {
   }
 
   info(...args) {
-    console.log(chalk.green(this.#getLeader('INFO', 2)), ...args);
+    if (!disabled) console.log(chalk.green(this.#getLeader('INFO', 2)), ...args);
   }
 
   debug(...args) {
-    if (debug) console.log(chalk.yellow(this.#getLeader('DEBUG', 1)), ...args);
+    if (debug && !disabled) console.log(chalk.yellow(this.#getLeader('DEBUG', 1)), ...args);
   }
 
   error(...args) {
-    console.error(chalk.red(this.#getLeader('ERROR', 1)), ...args);
+    if (!disabled) console.error(chalk.red(this.#getLeader('ERROR', 1)), ...args);
   }
 
   debugError(...args) {
-    if (debug) this.error(...args);
+    if (debug && !disabled) this.error(...args);
   }
 }
 

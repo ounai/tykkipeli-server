@@ -7,14 +7,9 @@ const ConnectionHandler = require('./net/ConnectionHandler');
 const PacketHandler = require('./net/PacketHandler');
 const Pinger = require('./net/Pinger');
 const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
+const Utils = require('./Utils');
 
 const log = require('./Logger')('Server');
-
-const inPacketPaths = [
-  './src/net/packets/in',
-  './src/net/packets/in/lobby',
-  './src/net/packets/in/game'
-];
 
 class Server {
   #connectionHandler;
@@ -22,6 +17,7 @@ class Server {
   #packetHandler;
   #maxPlayers;
   #motd;
+  #pingIntervalSeconds;
 
   async #isFull() {
     if (this.#maxPlayers === null) return false;
@@ -54,11 +50,15 @@ class Server {
     connection.handshake();
   }
 
-  async #init(config) {
-    const { ip, port, maxPlayers, pingIntervalSeconds, motd } = config.server;
+  #init(config, afterInitCallback) {
+    if (!config.server || Object.keys(config.server).length === 0) {
+      throw new Error(`Invalid server config ${config.server}`);
+    }
 
-    if (typeof(ip) !== 'string') throw new Error(`Invalid ip ${ip}`);
-    if (typeof(port) !== 'number' || isNaN(port)) throw new Error(`Invalid port ${port}`);
+    const { ip, port, maxPlayers, pingIntervalSeconds, motd, inPacketPaths } = config.server;
+
+    if (typeof(ip) !== 'string' || !Utils.isIP(ip)) throw new Error(`Invalid ip ${ip}`);
+    if (typeof(port) !== 'number' || isNaN(port) || port < 1 || port > 65535) throw new Error(`Invalid port ${port}`);
 
     if (typeof(maxPlayers) === 'number' && !isNaN(maxPlayers)) this.#maxPlayers = maxPlayers;
     else this.#maxPlayers = null;
@@ -67,19 +67,36 @@ class Server {
 
     this.#packetHandler = new PacketHandler(this, ...inPacketPaths);
 
-    this.#database = new Database(config.database);
-    await this.#database.init();
-
     this.#connectionHandler = new ConnectionHandler(ip, port);
     this.#connectionHandler.onConnection(this.#onConnect.bind(this));
 
-    new Pinger(this, pingIntervalSeconds).start();
+    if (typeof(pingIntervalSeconds) !== 'number' || isNaN(pingIntervalSeconds) || pingIntervalSeconds <= 0) {
+      throw new Error(`Invalid ping interval ${pingIntervalSeconds}`);
+    }
+
+    this.#pingIntervalSeconds = pingIntervalSeconds;
+
+    if (config.database) {
+      this.#database = new Database(config.database);
+
+      this.#database.init().then(afterInitCallback);
+    } else {
+      this.#database = null;
+
+      log.info('Database not initialized (missing config)');
+
+      afterInitCallback();
+    }
   }
 
   constructor(config, afterInitCallback) {
     log.info('Creating server...');
 
-    this.#init(config).then(() => typeof(afterInitCallback) === 'function' && afterInitCallback(this));
+    if (!config) {
+      throw new Error(`Invalid config ${config}`);
+    }
+
+    this.#init(config, () => typeof(afterInitCallback) === 'function' && afterInitCallback(this));
   }
 
   get connectionHandler() {
@@ -92,6 +109,8 @@ class Server {
 
   listen() {
     this.#connectionHandler.listen();
+
+    new Pinger(this, this.#pingIntervalSeconds).start();
   }
 }
 
