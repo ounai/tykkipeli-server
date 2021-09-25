@@ -293,7 +293,8 @@ class Player extends Model {
   async getGame() {
     const gamePlayer = await this.getGamePlayer();
 
-    return await gamePlayer.getGame();
+    if (gamePlayer === null) return null;
+    else return await gamePlayer.getGame();
   }
 
   toString() {

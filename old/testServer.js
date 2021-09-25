@@ -735,6 +735,7 @@ const server = net.createServer(socket => {
 
           if (games[gameId].players === 0) {
             delete games[gameId];
+
             console.log(id, 'Deleted game', gameId, '=', games[gameId]);
             console.log(games);
 
