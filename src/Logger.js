@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const { currentTimeString } = require('./Utils');
 
 const debug = (process.env.NODE_ENV !== 'production');
-const disabled = (process.env.NODE_ENV === 'test')
+const disabled = (process.env.NODE_ENV === 'test');
 
 const maxTitleLength = 16;
 

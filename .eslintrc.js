@@ -3,13 +3,17 @@ module.exports = {
   'env': {
     'commonjs': true,
     'es2021': true,
-    'node': true
+    'node': true,
+    'jest/globals': true
   },
   'extends': 'eslint:recommended',
   'parserOptions': {
     'ecmaVersion': 2021,
     'requireConfigFile': false
   },
+  'plugins': [
+    'jest'
+  ],
   'rules': {
     'indent': [
       'error',

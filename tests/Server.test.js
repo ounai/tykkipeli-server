@@ -40,7 +40,7 @@ describe('server initialization', () => {
   it('fails when ip is invalid', () => {
     [null, 123, '', '1.2.3.4.5', '.1.2.3.4.', '1234.1.1.1', '1.1.1.1234'].forEach(invalidIp => {
       expect(() => new Server(getConfig({ ip: invalidIp }))).toThrowError(/Invalid ip/);
-    })
+    });
   });
 
   it('fails when port is invalid', () => {
@@ -57,7 +57,7 @@ describe('server initialization', () => {
   });
 
   it('creates a connection handler', () => {
-    const server = new Server(config);
+    new Server(config);
 
     expect(ConnectionHandler).toHaveBeenCalledWith(config.server.ip, config.server.port);
   });

@@ -17,7 +17,7 @@ class QuitPacket extends InPacket {
     return packet.startsWith('game', 'quit');
   }
 
-  async handle(connection, packet) {
+  async handle(connection) {
     const player = await connection.getPlayer();
     const game = await player.getGame();
 
