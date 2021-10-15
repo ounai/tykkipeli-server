@@ -15,19 +15,23 @@ class ConnectionHandler {
   #nextConnectionId;
   #onConnectionListener;
 
-  #onDisconnect(connectionId) {
+  #onDisconnect (connectionId) {
     log.debug('Connection', connectionId, 'has disconnected, deleting...');
 
     delete this.#connections[connectionId];
   }
 
-  #onSocket(socket) {
-    if (typeof(this.#onConnectionListener) === 'function') {
+  #onSocket (socket) {
+    if (typeof this.#onConnectionListener === 'function') {
       const connectionId = this.#nextConnectionId++;
 
       log.debug('Creating connection', connectionId);
 
-      const connection = new Connection(connectionId, socket, this.#onDisconnect.bind(this, connectionId));
+      const connection = new Connection(
+        connectionId,
+        socket,
+        this.#onDisconnect.bind(this, connectionId)
+      );
 
       this.#connections[connectionId] = connection;
 
@@ -35,7 +39,7 @@ class ConnectionHandler {
     }
   }
 
-  constructor(ip, port) {
+  constructor (ip, port) {
     this.#ip = ip;
     this.#port = port;
 
@@ -45,37 +49,47 @@ class ConnectionHandler {
     this.#tcp = net.createServer(this.#onSocket.bind(this));
   }
 
-  get connections() {
+  get connections () {
     return Object.values(this.#connections);
   }
 
-  onConnection(listener) {
-    if (typeof(this.#onConnectionListener) === 'function') {
+  onConnection (listener) {
+    if (typeof this.#onConnectionListener === 'function') {
       throw new Error('onConnection is already being listened!');
     }
 
     this.#onConnectionListener = listener;
+
+    return this;
   }
 
-  listen() {
+  listen () {
     log.info('Initializing connection listener...');
 
     this.#tcp.listen(this.#port, this.#ip, () => {
       log.info(`Listening on ${this.#ip}:${this.#port}`);
     });
+
+    return this;
   }
 
-  getPlayerConnection(player) {
-    if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
-
-    if (typeof(player.connectionId) !== 'number' || isNaN(player.connectionId)) {
-      throw new Error(`Player has invalid connection id: ${player.connectionId}`);
+  getPlayerConnection (player) {
+    if (!(player instanceof Player)) {
+      throw new Error(`Invalid player ${player}`);
     }
 
-    if (this.#connections[player.connectionId]) return this.#connections[player.connectionId];
-    else throw new Error(`Could not find connection for player ${player}`);
+    const connectionId = player.connectionId;
+
+    if (typeof connectionId !== 'number' || isNaN(connectionId)) {
+      throw new Error(`Player has invalid connection id: ${connectionId}`);
+    }
+
+    if (!this.#connections[player.connectionId]) {
+      throw new Error(`Could not find connection for player ${player}`);
+    }
+
+    return this.#connections[player.connectionId];
   }
 }
 
 module.exports = ConnectionHandler;
-

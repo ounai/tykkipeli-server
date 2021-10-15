@@ -19,18 +19,21 @@ class Server {
   #motd;
   #pingIntervalSeconds;
 
-  async #isFull() {
+  async #isFull () {
     if (this.#maxPlayers === null) return false;
     else {
       const connectedPlayers = await Player.countConnected();
 
-      log.info('Player count before join:', connectedPlayers, '/', this.#maxPlayers);
+      log.info(
+        'Player count before join:',
+        connectedPlayers, '/', this.#maxPlayers
+      );
 
       return (connectedPlayers >= this.#maxPlayers);
     }
   }
 
-  async #onDisconnect(connection) {
+  async #onDisconnect (connection) {
     log.debug('Connection', connection.id, 'disconnected');
 
     const player = await connection.getPlayer();
@@ -38,39 +41,62 @@ class Server {
     if (player) new DisconnectEvent(this, player);
   }
 
-  async #onConnect(connection) {
+  async #onConnect (connection) {
     if (await this.#isFull()) {
       log.info('Max number of players reached, not accepting connection');
 
       return new ServerFullPacket().write(connection);
     }
 
-    connection.onPacket(this.#packetHandler.onPacket.bind(this.#packetHandler, connection));
+    const packetHandler = this.#packetHandler;
+
+    connection.onPacket(packetHandler.onPacket.bind(packetHandler, connection));
     connection.onDisconnect(this.#onDisconnect.bind(this, connection));
     connection.handshake();
   }
 
-  #init(config, afterInitCallback) {
+  #initPacketHandler (inPacketPaths) {
+    this.#packetHandler = new PacketHandler(this, ...inPacketPaths);
+  }
+
+  #initConnectionHandler (ip, port) {
+    this.#connectionHandler = new ConnectionHandler(ip, port)
+      .onConnection(this.#onConnect.bind(this));
+  }
+
+  #init (config, afterInitCallback) {
     if (!config.server || Object.keys(config.server).length === 0) {
       throw new Error(`Invalid server config ${config.server}`);
     }
 
-    const { ip, port, maxPlayers, pingIntervalSeconds, motd, inPacketPaths } = config.server;
+    const {
+      ip,
+      port,
+      maxPlayers,
+      pingIntervalSeconds,
+      motd,
+      inPacketPaths
+    } = config.server;
 
-    if (typeof(ip) !== 'string' || !Utils.isIP(ip)) throw new Error(`Invalid ip ${ip}`);
-    if (typeof(port) !== 'number' || isNaN(port) || port < 1 || port > 65535) throw new Error(`Invalid port ${port}`);
+    Utils.validateIP(ip);
+    Utils.validatePort(port);
 
-    if (typeof(maxPlayers) === 'number' && !isNaN(maxPlayers)) this.#maxPlayers = maxPlayers;
-    else this.#maxPlayers = null;
+    this.#maxPlayers = (
+      typeof maxPlayers === 'number' && !isNaN(maxPlayers)
+        ? maxPlayers
+        : null
+    );
 
-    if (typeof(motd) === 'string' && motd.length > 0) this.#motd = motd;
+    if (typeof motd === 'string' && motd.length > 0) this.#motd = motd;
 
-    this.#packetHandler = new PacketHandler(this, ...inPacketPaths);
+    this.#initPacketHandler(inPacketPaths);
+    this.#initConnectionHandler(ip, port);
 
-    this.#connectionHandler = new ConnectionHandler(ip, port);
-    this.#connectionHandler.onConnection(this.#onConnect.bind(this));
-
-    if (typeof(pingIntervalSeconds) !== 'number' || isNaN(pingIntervalSeconds) || pingIntervalSeconds <= 0) {
+    if (
+      typeof pingIntervalSeconds !== 'number' ||
+      isNaN(pingIntervalSeconds) ||
+      pingIntervalSeconds <= 0
+    ) {
       throw new Error(`Invalid ping interval ${pingIntervalSeconds}`);
     }
 
@@ -89,25 +115,30 @@ class Server {
     }
   }
 
-  constructor(config, afterInitCallback) {
+  constructor (config, afterInitCallback) {
     log.info('Creating server...');
 
     if (!config) {
       throw new Error(`Invalid config ${config}`);
     }
 
-    this.#init(config, () => typeof(afterInitCallback) === 'function' && afterInitCallback(this));
+    const initCallback = () => (
+      typeof afterInitCallback === 'function' &&
+      afterInitCallback(this)
+    );
+
+    this.#init(config, initCallback);
   }
 
-  get connectionHandler() {
+  get connectionHandler () {
     return this.#connectionHandler;
   }
 
-  get motd() {
+  get motd () {
     return this.#motd ?? null;
   }
 
-  listen() {
+  listen () {
     this.#connectionHandler.listen();
 
     new Pinger(this, this.#pingIntervalSeconds).start();
@@ -115,4 +146,3 @@ class Server {
 }
 
 module.exports = Server;
-

@@ -11,10 +11,12 @@ class PacketHandler {
   #server;
   #packetHandlers;
 
-  #registerPacketHandlers(packetHandlersPath) {
-    log.info('Registering packet handlers...');
+  #registerPacketHandlers (packetHandlersPath) {
+    log.debug('Registering packet handlers in', packetHandlersPath);
 
-    for (const filename of getFilenamesInDirectory(`${packetHandlersPath}`, 'js')) {
+    const filenames = getFilenamesInDirectory(`${packetHandlersPath}`, 'js');
+
+    for (const filename of filenames) {
       log.debug('Registering packet', filename);
 
       const Handler = require.main.require(`${packetHandlersPath}/${filename}`);
@@ -25,9 +27,11 @@ class PacketHandler {
     }
   }
 
-  constructor(server, ...packetHandlersPaths) {
+  constructor (server, ...packetHandlersPaths) {
     this.#server = server;
     this.#packetHandlers = [];
+
+    log.info('Registering packet handlers...');
 
     for (const packetHandlersPath of packetHandlersPaths) {
       log.debug('Creating packet handler for path', packetHandlersPath);
@@ -36,7 +40,7 @@ class PacketHandler {
     }
   }
 
-  async onPacket(connection, packet) {
+  async onPacket (connection, packet) {
     let handled = false;
 
     for (const packetHandler of this.#packetHandlers) {
@@ -51,9 +55,14 @@ class PacketHandler {
       }
     }
 
-    if (!handled) log.debugError('Packet not handled!', chalk.magenta(packet.type.toString()), packet.args);
+    if (!handled) {
+      log.debugError(
+        'Packet not handled!',
+        chalk.magenta(packet.type.toString()),
+        packet.args
+      );
+    }
   }
 }
 
 module.exports = PacketHandler;
-
