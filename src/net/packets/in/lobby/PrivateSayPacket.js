@@ -12,11 +12,11 @@ const log = require('../../../../Logger')('PrivateSayPacket');
 class PrivateSayPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('lobby', 'sayp');
   }
 
-  async handle(connection, packet) {
+  async handle (connection, packet) {
     const sourcePlayer = await connection.getPlayer();
 
     const targetUsername = packet.getString(2);
@@ -25,19 +25,28 @@ class PrivateSayPacket extends InPacket {
     const targetPlayer = await Player.findByUsername(targetUsername);
 
     if (!targetPlayer) {
-      return log.error('Not sending private message to', chalk.magenta(targetUsername), '- could not find player');
+      log.error('Not sending private message to', chalk.magenta(targetUsername), '- could not find player');
+
+      return;
     }
 
-    log.debug(chalk.magenta(sourcePlayer.toString()), '->', chalk.magenta(targetPlayer.toString()), '(private):', chalk.cyan(message));
+    const fromStr = chalk.magenta(sourcePlayer.toString());
+    const toStr = chalk.magenta(targetPlayer.toString());
+
+    log.debug(fromStr, '->', toStr, '(private):', chalk.cyan(message));
 
     if (!targetPlayer.isConnected) {
-      return log.error('Not sending private message to', chalk.magenta(targetPlayer), '- player is not connected');
+      log.error('Not sending private message to', toStr, '- player is not connected');
+
+      return;
     }
 
     const targetConnection = this.server.connectionHandler.getPlayerConnection(targetPlayer);
 
     if (!targetConnection) {
-      return log.error('Not sending private message to', chalk.magenta(targetPlayer), '- invalid connection', targetConnection);
+      log.error('Not sending private message to', toStr, '- invalid connection', targetConnection);
+
+      return;
     }
 
     new PrivateSayOutPacket(sourcePlayer.username, message).write(targetConnection);
@@ -45,4 +54,3 @@ class PrivateSayPacket extends InPacket {
 }
 
 module.exports = PrivateSayPacket;
-

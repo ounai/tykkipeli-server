@@ -24,7 +24,7 @@ module.exports = {
   rules: {
     'semi': ['error', 'always'],
     'eol-last': ['error', 'always'],
-    'max-len': ['warn', { 'code': 80 }],
+    'max-len': ['warn', { 'code': 120 }],
     'max-lines-per-function': ['warn', 50],
     'strict': ['error', 'global'],
     'no-multiple-empty-lines': [

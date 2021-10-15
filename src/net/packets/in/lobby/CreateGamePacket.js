@@ -26,15 +26,7 @@ const log = require('../../../../Logger')('CreateGamePacket');
 class CreateGamePacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
-    return packet.startsWith('lobby', 'create');
-  }
-
-  async handle(connection, packet) {
-    const player = await connection.getPlayer();
-
-    log.debug('Player', chalk.magenta(player.toString()), 'is creating a new game');
-
+  async #getGameOptions (packet, player) {
     let gameName = packet.getString(2);
     if (gameName === '-') gameName = `${player.username}'s game`;
 
@@ -65,6 +57,36 @@ class CreateGamePacket extends InPacket {
     const scoringMode = await ScoringMode.findById(packet.getNumber(12));
     if (!scoringMode) throw new Error(`Invalid scoring mode ${scoringMode}`);
 
+    return {
+      gameName,
+      password,
+      registeredPlayersOnly,
+      dudsEnabled,
+      maxPlayers,
+      roundCount,
+      thinkingTime,
+      playingOrderMode,
+      weaponAddingMode,
+      windMode,
+      scoringMode
+    };
+  }
+
+  async #createGame (options, player) {
+    const {
+      gameName,
+      password,
+      registeredPlayersOnly,
+      dudsEnabled,
+      maxPlayers,
+      roundCount,
+      thinkingTime,
+      playingOrderMode,
+      weaponAddingMode,
+      windMode,
+      scoringMode
+    } = options;
+
     const game = await Game.create({
       name: gameName,
       password,
@@ -87,6 +109,21 @@ class CreateGamePacket extends InPacket {
       chalk.magenta(player.username)
     );
 
+    return game;
+  }
+
+  match (packet) {
+    return packet.startsWith('lobby', 'create');
+  }
+
+  async handle (connection, packet) {
+    const player = await connection.getPlayer();
+
+    log.debug('Player', chalk.magenta(player.toString()), 'is creating a new game');
+
+    const gameOptions = await this.#getGameOptions(packet, player);
+    const game = await this.#createGame(gameOptions, player);
+
     const gamePlayer = await GamePlayer.create({
       id: 0,
       GameId: game.id,
@@ -107,4 +144,3 @@ class CreateGamePacket extends InPacket {
 }
 
 module.exports = CreateGamePacket;
-

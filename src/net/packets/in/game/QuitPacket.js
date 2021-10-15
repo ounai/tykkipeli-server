@@ -13,11 +13,11 @@ const log = require('../../../../Logger')('QuitPacket');
 class QuitPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('game', 'quit');
   }
 
-  async handle(connection) {
+  async handle (connection) {
     const player = await connection.getPlayer();
     const game = await player.getGame();
 
@@ -46,4 +46,3 @@ class QuitPacket extends InPacket {
 }
 
 module.exports = QuitPacket;
-

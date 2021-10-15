@@ -9,14 +9,14 @@ const GamePlayer = require('../../../../db/models/GamePlayer');
 class SayPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('game', 'say');
   }
 
-  async handle(connection, packet) {
+  async handle (connection, packet) {
     const message = packet.getString(2);
 
-    if (typeof(message) !== 'string' || message.length === 0) {
+    if (typeof message !== 'string' || message.length === 0) {
       throw new Error(`Invalid chat message ${message}`);
     }
 
@@ -36,4 +36,3 @@ class SayPacket extends InPacket {
 }
 
 module.exports = SayPacket;
-

@@ -8,14 +8,16 @@ const OutShoutPacket = require('../../out/game/ShoutPacket');
 class ShoutPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('game', 'shout');
   }
 
-  async handle(connection, packet) {
+  async handle (connection, packet) {
     const message = packet.getString(2);
 
-    if (typeof(message) !== 'string' || message.length === 0) throw new Error(`Invalid shout message ${message}`);
+    if (typeof message !== 'string' || message.length === 0) {
+      throw new Error(`Invalid shout message ${message}`);
+    }
 
     const player = await connection.getPlayer();
     const gamePlayer = await player.getGamePlayer();
@@ -28,4 +30,3 @@ class ShoutPacket extends InPacket {
 }
 
 module.exports = ShoutPacket;
-

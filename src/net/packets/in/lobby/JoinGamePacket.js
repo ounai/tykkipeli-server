@@ -23,11 +23,11 @@ const log = require('../../../../Logger')('JoinGamePacket');
 class JoinGamePacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('lobby', 'join');
   }
 
-  async handle(connection, packet) {
+  async handle (connection, packet) {
     const player = await connection.getPlayer();
     const gameId = packet.getNumber(2);
 
@@ -65,4 +65,3 @@ class JoinGamePacket extends InPacket {
 }
 
 module.exports = JoinGamePacket;
-
