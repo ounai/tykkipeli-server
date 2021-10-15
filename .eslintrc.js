@@ -1,53 +1,56 @@
+/* eslint-disable quote-props */
+'use strict';
+
 module.exports = {
-  'parser': '@babel/eslint-parser',
-  'env': {
-    'commonjs': true,
-    'es2021': true,
-    'node': true,
+  parser: '@babel/eslint-parser',
+  env: {
+    commonjs: true,
+    es2021: true,
+    node: true,
     'jest/globals': true
   },
-  'extends': 'eslint:recommended',
-  'parserOptions': {
-    'ecmaVersion': 2021,
-    'requireConfigFile': false
-  },
-  'plugins': [
-    'jest'
+  extends: [
+    'standard'
   ],
-  'rules': {
-    'indent': [
-      'error',
-      2
-    ],
-    'linebreak-style': [
-      'error',
-      'unix'
-    ],
-    'quotes': [
-      'error',
-      'single'
-    ],
-    'semi': [
-      'error',
-      'always'
-    ],
-    'eqeqeq': 'error',
-    'no-trailing-spaces': 'error',
-    'object-curly-spacing': [
-      'error',
-      'always'
-    ],
-    'arrow-spacing': [
+  parserOptions: {
+    ecmaVersion: 12,
+    requireConfigFile: false,
+    sourceType: 'script'
+  },
+  plugins: [
+    'jest',
+    'prefer-arrow'
+  ],
+  rules: {
+    'semi': ['error', 'always'],
+    'eol-last': ['error', 'always'],
+    'max-len': ['warn', { 'code': 80 }],
+    'max-lines-per-function': ['warn', 50],
+    'strict': ['error', 'global'],
+    'no-multiple-empty-lines': [
       'error',
       {
-        'before': true,
-        'after': true
+        'max': 1,
+        'maxEOF': 0,
+        'maxBOF': 0
       }
     ],
-    'eol-last': [
+    'prefer-arrow/prefer-arrow-functions': [
       'error',
-      'always'
+      {
+        'disallowPrototype': true,
+        'singleReturnOnly': false,
+        'classPropertiesAllowed': false
+      }
+    ],
+    'prefer-arrow-callback': [
+      'error',
+      { 'allowNamedFunctions': true }
+    ],
+    'func-style': [
+      'error',
+      'expression',
+      { 'allowArrowFunctions': true }
     ]
   }
-};
-
+}
