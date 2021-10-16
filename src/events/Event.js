@@ -3,14 +3,13 @@
 const log = require('../Logger')('Event');
 
 class Event {
-  constructor(...args) {
+  constructor (...args) {
     log.debug('Handling event:', this.constructor.name);
 
     this.handle(...args);
   }
 
-  handle() {}
+  handle () {}
 }
 
 module.exports = Event;
-
