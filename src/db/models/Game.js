@@ -49,27 +49,27 @@ const associated = [
 ];
 
 class Game extends Model {
-  static get columns() {
+  static get columns () {
     return columns;
   }
 
-  static get associated() {
+  static get associated () {
     return associated;
   }
 
-  static async findById(id) {
+  static async findById (id) {
     return await this.findByPk(id);
   }
 
-  get isPasswordRequired() {
+  get isPasswordRequired () {
     return this.password !== null;
   }
 
-  async getPlayerCount() {
+  async getPlayerCount () {
     return (await this.getGamePlayers()).length;
   }
 
-  async getPlayers() {
+  async getPlayers () {
     const gamePlayers = await this.getGamePlayers({
       include: Player
     });
@@ -77,15 +77,15 @@ class Game extends Model {
     return gamePlayers.map(gamePlayer => gamePlayer.Player);
   }
 
-  async canBeJoined() {
+  async canBeJoined () {
     return (!this.hasStarted && (await this.getPlayerCount()) < this.maxPlayers);
   }
 
-  async getPlayerNamesString() {
+  async getPlayerNamesString () {
     return (await this.getPlayers()).map(player => player.username).join(', ');
   }
 
-  async getGameListItem() {
+  async getGameListItem () {
     const isPasswordRequired = (this.isPasswordRequired ? 't' : 'f');
     const registeredPlayersOnly = (this.registeredPlayersOnly ? 1 : 0);
     const dudsEnabled = (this.dudsEnabled ? 't' : 'f');
@@ -117,11 +117,11 @@ class Game extends Model {
     ];
   }
 
-  async getGameListItemString() {
+  async getGameListItemString () {
     return (await this.getGameListItem()).join('\t');
   }
 
-  async getGameInfo() {
+  async getGameInfo () {
     const isPasswordRequired = (this.isPasswordRequired ? 't' : 'f');
     const registeredPlayersOnly = (this.registeredPlayersOnly ? 1 : 0);
     const weaponAddingModeId = (await this.getWeaponAddingMode()).id;
@@ -145,10 +145,9 @@ class Game extends Model {
     ];
   }
 
-  toString() {
+  toString () {
     return `${this.name} (id=${this.id})`;
   }
 }
 
 module.exports = Game;
-

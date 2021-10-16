@@ -9,7 +9,7 @@ class Database {
   #sequelize;
   #models;
 
-  async #writeRows(model, rows = []) {
+  async #writeRows (model, rows = []) {
     if (rows.length > 0) {
       for (const row of rows) {
         await model.create(row);
@@ -19,7 +19,7 @@ class Database {
     }
   }
 
-  async #loadModels(modelsPath) {
+  async #loadModels (modelsPath) {
     for (const filename of getFilenamesInDirectory(modelsPath, 'js')) {
       log.debug('Loading model file', filename);
 
@@ -37,8 +37,9 @@ class Database {
     }
   }
 
-  async #initAssociations() {
-    let associationsCount = 0, modelsCount = 0;
+  async #initAssociations () {
+    let associationsCount = 0;
+    let modelsCount = 0;
 
     for (const [modelName, model] of Object.entries(this.#models)) {
       if (model.associated && model.associated.length > 0) modelsCount++;
@@ -65,7 +66,7 @@ class Database {
     );
   }
 
-  async #setupModels() {
+  async #setupModels () {
     // Predefined rows
     for (const [modelName, model] of Object.entries(this.#models)) {
       if (model.rows) {
@@ -77,7 +78,7 @@ class Database {
     }
   }
 
-  constructor(databaseConfig) {
+  constructor (databaseConfig) {
     log.info('Initializing database connection...');
 
     this.#sequelize = new Sequelize({
@@ -86,7 +87,7 @@ class Database {
     });
   }
 
-  async init() {
+  async init () {
     log.info('Connecting to the database...');
 
     this.#models = {};
@@ -104,4 +105,3 @@ class Database {
 }
 
 module.exports = Database;
-

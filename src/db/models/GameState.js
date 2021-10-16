@@ -28,19 +28,19 @@ const associated = [
 ];
 
 class GameState extends Model {
-  static get columns() {
+  static get columns () {
     return columns;
   }
 
-  static get rows() {
+  static get rows () {
     return rows;
   }
 
-  static get associated() {
+  static get associated () {
     return associated;
   }
 
-  static async findByName(name) {
+  static async findByName (name) {
     return await this.findOne({
       where: {
         name
@@ -50,4 +50,3 @@ class GameState extends Model {
 }
 
 module.exports = GameState;
-

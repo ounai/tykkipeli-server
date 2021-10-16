@@ -26,15 +26,15 @@ const associated = [
 ];
 
 class GamePlayer extends Model {
-  static get columns() {
+  static get columns () {
     return columns;
   }
 
-  static get associated() {
+  static get associated () {
     return associated;
   }
 
-  async findOthersInGame() {
+  async findOthersInGame () {
     return await GamePlayer.findAll({
       where: {
         GameId: this.GameId,
@@ -47,4 +47,3 @@ class GamePlayer extends Model {
 }
 
 module.exports = GamePlayer;
-

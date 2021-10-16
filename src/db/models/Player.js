@@ -88,25 +88,25 @@ const associated = [
 ];
 
 class Player extends Model {
-  static get columns() {
+  static get columns () {
     return columns;
   }
 
-  static get associated() {
+  static get associated () {
     return associated;
   }
 
-  static async findById(id) {
+  static async findById (id) {
     return await this.findByPk(id);
   }
 
-  static async destroyById(id) {
+  static async destroyById (id) {
     return await this.destroy({
       where: { id }
     });
   }
 
-  static async countConnected() {
+  static async countConnected () {
     return await this.count({
       where: {
         isConnected: true
@@ -114,7 +114,7 @@ class Player extends Model {
     });
   }
 
-  static async destroyOldDisconnectedPlayers(tresholdDate = null) {
+  static async destroyOldDisconnectedPlayers (tresholdDate = null) {
     if (tresholdDate === null) {
       // Default to one hour ago
       tresholdDate = new Date();
@@ -131,7 +131,7 @@ class Player extends Model {
     });
   }
 
-  static async countByGameState(...gameStateNames) {
+  static async countByGameState (...gameStateNames) {
     return await this.count({
       where: {
         '$GameState.name$': gameStateNames
@@ -140,7 +140,7 @@ class Player extends Model {
     });
   }
 
-  static async findByUsername(username) {
+  static async findByUsername (username) {
     return await this.findOne({
       where: {
         username
@@ -148,27 +148,27 @@ class Player extends Model {
     });
   }
 
-  static async isUsernameInUse(username) {
+  static async isUsernameInUse (username) {
     return !!(await this.findByUsername(username));
   }
 
-  #getUserInfoFlags() {
+  #getUserInfoFlags () {
     const flags = {
-      'r': this.isRegistered,
-      'v': this.isVip,
-      's': this.accessLevel >= 1 // sheriff
+      r: this.isRegistered,
+      v: this.isVip,
+      s: this.accessLevel >= 1 // sheriff
     };
 
     return (
       Object.entries(flags)
-        .filter(([flag, enabled]) => typeof(flag) === 'string' && flag.length === 1 && enabled)
+        .filter(([flag, enabled]) => typeof flag === 'string' && flag.length === 1 && enabled)
         .map(([flag]) => flag)
         .join('')
     );
   }
 
   // TODO rename to getLobbyInfoString
-  getUserInfoString(version = 3) {
+  getUserInfoString (version = 3) {
     if (version === 3) {
       const flags = this.#getUserInfoFlags();
 
@@ -178,7 +178,7 @@ class Player extends Model {
         this.ranking,
         this.language,
         '-', // player card
-        '-'  // player icon
+        '-' // player icon
       ];
 
       return '3:' + userInfo.join('^');
@@ -188,7 +188,7 @@ class Player extends Model {
   }
 
   // TODO rename to getGameInfoString
-  async getPlayerInfoString(includeId = true) {
+  async getPlayerInfoString (includeId = true) {
     const info = [];
 
     if (includeId) {
@@ -204,7 +204,7 @@ class Player extends Model {
     return info.join('\t');
   }
 
-  async countOthersByGameState(...gameStateNames) {
+  async countOthersByGameState (...gameStateNames) {
     return await Player.count({
       where: {
         isConnected: true,
@@ -215,7 +215,7 @@ class Player extends Model {
     });
   }
 
-  async findOthersByGameState(...gameStateNames) {
+  async findOthersByGameState (...gameStateNames) {
     return await Player.findAll({
       where: {
         isConnected: true,
@@ -226,7 +226,7 @@ class Player extends Model {
     });
   }
 
-  async setConnected(connected) {
+  async setConnected (connected) {
     this.isConnected = connected;
     this.disconnectedAt = (connected ? null : new Date());
 
@@ -235,7 +235,7 @@ class Player extends Model {
     await this.save();
   }
 
-  async setLocale(locale) {
+  async setLocale (locale) {
     const language = locale.slice(0, 2);
 
     this.locale = locale;
@@ -244,31 +244,31 @@ class Player extends Model {
     await this.save();
   }
 
-  async setRegistered(registered) {
+  async setRegistered (registered) {
     this.isRegistered = registered;
 
     await this.save();
   }
 
-  async setUsername(username) {
+  async setUsername (username) {
     this.username = username;
 
     await this.save();
   }
 
-  async setConnectionId(connectionId) {
+  async setConnectionId (connectionId) {
     this.connectionId = connectionId;
 
     await this.save();
   }
 
-  async setHasLoggedIn(hasLoggedIn) {
+  async setHasLoggedIn (hasLoggedIn) {
     this.hasLoggedIn = hasLoggedIn;
 
     await this.save();
   }
 
-  async requestUsername(username) {
+  async requestUsername (username) {
     log.debug('Player', this.id, 'requests username', chalk.cyan(username));
 
     if (await Player.isUsernameInUse(username)) {
@@ -280,27 +280,26 @@ class Player extends Model {
     }
   }
 
-  async isGameState(gameStateName) {
+  async isGameState (gameStateName) {
     return (await this.getGameState()).name === gameStateName;
   }
 
-  async updateLastPong() {
+  async updateLastPong () {
     this.lastPong = new Date();
 
     await this.save();
   }
 
-  async getGame() {
+  async getGame () {
     const gamePlayer = await this.getGamePlayer();
 
     if (gamePlayer === null) return null;
     else return await gamePlayer.getGame();
   }
 
-  toString() {
+  toString () {
     return `${this.username} (id=${this.id})`;
   }
 }
 
 module.exports = Player;
-

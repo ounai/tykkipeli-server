@@ -25,22 +25,21 @@ const associated = [
 ];
 
 class PlayingOrderMode extends Model {
-  static get columns() {
+  static get columns () {
     return columns;
   }
 
-  static get rows() {
+  static get rows () {
     return rows;
   }
 
-  static get associated() {
+  static get associated () {
     return associated;
   }
 
-  static async findById(id) {
+  static async findById (id) {
     return await this.findByPk(id);
   }
 }
 
 module.exports = PlayingOrderMode;
-

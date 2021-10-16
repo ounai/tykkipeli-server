@@ -17,8 +17,8 @@ const columns = {
 
 const rows = [
   { id: -1, name: 'DECREASING' },
-  { id:  0, name: 'CONSTANT' },
-  { id:  1, name: 'INCREASING' }
+  { id: 0, name: 'CONSTANT' },
+  { id: 1, name: 'INCREASING' }
 ];
 
 const associated = [
@@ -26,22 +26,21 @@ const associated = [
 ];
 
 class WeaponAddingMode extends Model {
-  static get columns() {
+  static get columns () {
     return columns;
   }
 
-  static get rows() {
+  static get rows () {
     return rows;
   }
 
-  static get associated() {
+  static get associated () {
     return associated;
   }
 
-  static async findById(id) {
+  static async findById (id) {
     return await this.findByPk(id);
   }
 }
 
 module.exports = WeaponAddingMode;
-
