@@ -6,14 +6,13 @@ const InPacket = require('./InPacket');
 class EndPacket extends InPacket {
   type = PacketType.COMMAND;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('end');
   }
 
-  async handle(connection) {
+  async handle (connection) {
     connection.disconnect();
   }
 }
 
 module.exports = EndPacket;
-

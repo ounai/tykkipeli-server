@@ -6,14 +6,13 @@ const PacketType = require('../../PacketType');
 class QuitPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('quit');
   }
 
-  handle(connection) {
+  handle (connection) {
     connection.disconnect();
   }
 }
 
 module.exports = QuitPacket;
-

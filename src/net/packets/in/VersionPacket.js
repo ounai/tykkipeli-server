@@ -10,11 +10,11 @@ const log = require('../../../Logger')('VersionPacket');
 class VersionPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('version');
   }
 
-  handle(connection, packet) {
+  handle (connection, packet) {
     const versionNumber = packet.getNumber(1);
 
     if (versionNumber === 24) {
@@ -30,4 +30,3 @@ class VersionPacket extends InPacket {
 }
 
 module.exports = VersionPacket;
-

@@ -8,14 +8,13 @@ const log = require('../../../Logger')('TlogPacket');
 class TlogPacket extends InPacket {
   type = PacketType.STRING;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('tlog');
   }
 
-  handle(connection, packet) {
+  handle (connection, packet) {
     log.debug('tlog:', `[${packet.args.slice(1).join(', ')}]`);
   }
 }
 
 module.exports = TlogPacket;
-

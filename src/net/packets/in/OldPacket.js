@@ -13,11 +13,11 @@ const log = require('../../../Logger')('OldPacket');
 class OldPacket extends InPacket {
   type = PacketType.COMMAND;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('old');
   }
 
-  async handle(connection, packet) {
+  async handle (connection, packet) {
     log.debug('OldPacket received from connection', connection.id);
 
     const player = await Player.findById(packet.getNumber(1));
@@ -46,4 +46,3 @@ class OldPacket extends InPacket {
 }
 
 module.exports = OldPacket;
-

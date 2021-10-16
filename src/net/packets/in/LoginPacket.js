@@ -19,16 +19,16 @@ const log = require('../../../Logger')('LoginPacket');
 class LoginPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('login');
   }
 
-  async handle(connection, packet) {
+  async handle (connection, packet) {
     const player = await connection.getPlayer();
 
     const username = packet.getString(1);
 
-    if (typeof(username) === 'string' && username.length > 0 && username !== '-') {
+    if (typeof username === 'string' && username.length > 0 && username !== '-') {
       await player.requestUsername(username);
     }
 
@@ -42,7 +42,7 @@ class LoginPacket extends InPacket {
       new OwnJoinPacket(player).write(connection);
       new NumberOfUsersPacket(player).write(connection);
 
-      if (typeof(this.server.motd) === 'string' && this.server.motd.length > 0) {
+      if (typeof this.server.motd === 'string' && this.server.motd.length > 0) {
         log.debug('Writing motd:', this.server.motd);
 
         new ServerSayPacket(this.server.motd).write(connection);
@@ -63,4 +63,3 @@ class LoginPacket extends InPacket {
 }
 
 module.exports = LoginPacket;
-

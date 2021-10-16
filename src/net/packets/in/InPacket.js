@@ -6,18 +6,15 @@ class InPacket {
   type = PacketType.NONE;
   server;
 
-  constructor(server) {
+  constructor (server) {
     this.server = server;
   }
 
-  match() {
+  match () {
     return false;
   }
 
-  handle() {
-    return;
-  }
+  handle () {}
 }
 
 module.exports = InPacket;
-

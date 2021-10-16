@@ -10,11 +10,11 @@ const log = require('../../../Logger')('UserDataPacket');
 class UserDataPacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('userdata');
   }
 
-  handle(connection, packet) {
+  handle (connection, packet) {
     const data = packet.getString(1);
 
     log.debug('Received user data packet:', chalk.magenta(data));
@@ -25,4 +25,3 @@ class UserDataPacket extends InPacket {
 }
 
 module.exports = UserDataPacket;
-

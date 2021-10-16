@@ -11,11 +11,11 @@ const log = require('../../../Logger')('NewPacket');
 class NewPacket extends InPacket {
   type = PacketType.COMMAND;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('new');
   }
 
-  async handle(connection) {
+  async handle (connection) {
     log.debug('NewPacket received from connection', connection.id);
 
     const player = await Player.create();
@@ -33,4 +33,3 @@ class NewPacket extends InPacket {
 }
 
 module.exports = NewPacket;
-

@@ -9,11 +9,11 @@ const log = require('../../../Logger')('LoginTypePacket');
 class LoginTypePacket extends InPacket {
   type = PacketType.DATA;
 
-  match(packet) {
+  match (packet) {
     return packet.startsWith('logintype');
   }
 
-  async handle(connection, packet) {
+  async handle (connection, packet) {
     const registered = (packet.getString(1) === 'reg');
 
     log.debug('Player registered:', registered);
@@ -25,4 +25,3 @@ class LoginTypePacket extends InPacket {
 }
 
 module.exports = LoginTypePacket;
-
