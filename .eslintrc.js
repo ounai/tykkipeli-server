@@ -22,7 +22,6 @@ module.exports = {
     'prefer-arrow'
   ],
   rules: {
-    'no-new': 0,
     'semi': ['error', 'always'],
     'eol-last': ['error', 'always'],
     'max-len': ['warn', { 'code': 120 }],

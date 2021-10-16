@@ -21,6 +21,7 @@ const getConfig = serverFields => ({
   }
 });
 
+// eslint-disable-next-line max-lines-per-function
 describe('server initialization', () => {
   let config;
 
@@ -31,14 +32,19 @@ describe('server initialization', () => {
     ConnectionHandler.mockClear();
   });
 
-  it('fails when invalid or no config is given', () => {
-    expect(() => new Server()).toThrow(Error);
-    expect(() => new Server({})).toThrow(Error);
-    expect(() => new Server({ server: {} })).toThrow(Error);
+  it('fails when invalid or no config is given', async () => {
+    await expect(() => new Server().init())
+      .rejects.toThrow(Error);
+
+    await expect(() => new Server().init({}))
+      .rejects.toThrow(Error);
+
+    await expect(() => new Server().init({ server: {} }))
+      .rejects.toThrow(Error);
   });
 
-  it('fails when ip is invalid', () => {
-    [
+  it('fails when ip is invalid', async () => {
+    const invalidIps = [
       null,
       123,
       '',
@@ -46,28 +52,33 @@ describe('server initialization', () => {
       '.1.2.3.4.',
       '1234.1.1.1',
       '1.1.1.1234'
-    ].forEach(invalidIp => {
-      expect(() => new Server(getConfig({ ip: invalidIp })))
-        .toThrowError(/Invalid ip/);
-    });
+    ];
+
+    for (const invalidIp of invalidIps) {
+      await expect(() => new Server().init(getConfig({ ip: invalidIp })))
+        .rejects.toThrowError(/Invalid ip/);
+    }
   });
 
-  it('fails when port is invalid', () => {
-    [
+  it('fails when port is invalid', async () => {
+    const invalidPorts = [
       null,
       NaN,
       '',
       -1,
       0,
       65536
-    ].forEach(invalidPort => {
-      expect(() => new Server(getConfig({ port: invalidPort })))
-        .toThrowError(/Invalid port/);
-    });
+    ];
+
+    for (const invalidPort of invalidPorts) {
+      await expect(() => new Server().init(getConfig({ port: invalidPort })))
+        .rejects.toThrowError(/Invalid port/);
+    }
   });
 
-  it('creates a packet handler', () => {
-    const server = new Server(config);
+  it('creates a packet handler', async () => {
+    const server = new Server();
+    await server.init(config);
 
     expect(PacketHandler)
       .toHaveBeenCalledWith(server, ...config.server.inPacketPaths);
@@ -76,8 +87,9 @@ describe('server initialization', () => {
       .toBeInstanceOf(ConnectionHandler);
   });
 
-  it('creates a connection handler', () => {
-    new Server(config);
+  it('creates a connection handler', async () => {
+    const server = new Server();
+    await server.init(config);
 
     expect(ConnectionHandler)
       .toHaveBeenCalledWith(config.server.ip, config.server.port);
@@ -85,11 +97,13 @@ describe('server initialization', () => {
 });
 
 describe('motd', () => {
-  it('returns motd when set', () => {
+  it('returns motd when set', async () => {
     const motd = 'test motd string';
+    const server = new Server();
 
-    expect(new Server(getConfig({ motd })).motd)
-      .toEqual(motd);
+    await server.init(getConfig({ motd }));
+
+    expect(server.motd).toEqual(motd);
   });
 
   it('returns null motd when not set or empty', () => {
@@ -111,16 +125,18 @@ describe('listen', () => {
     ConnectionHandler.mockClear();
   });
 
-  it('calls connection handler to start listening', () => {
-    new Server(config).listen();
+  it('calls connection handler to start listening', async () => {
+    const server = new Server();
+    await server.init(config);
+    server.listen();
 
     expect(ConnectionHandler.mock.instances[0].listen)
       .toHaveBeenCalledTimes(1);
   });
 
-  it('creates a pinger instance', () => {
-    const server = new Server(config);
-
+  it('creates a pinger instance', async () => {
+    const server = new Server();
+    await server.init(config);
     server.listen();
 
     expect(Pinger)

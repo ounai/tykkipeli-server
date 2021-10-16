@@ -38,7 +38,7 @@ class Server {
 
     const player = await connection.getPlayer();
 
-    if (player) new DisconnectEvent(this, player);
+    if (player) new DisconnectEvent(this, player).fire();
   }
 
   async #onConnect (connection) {
@@ -60,11 +60,37 @@ class Server {
   }
 
   #initConnectionHandler (ip, port) {
-    this.#connectionHandler = new ConnectionHandler(ip, port)
-      .onConnection(this.#onConnect.bind(this));
+    this.#connectionHandler = new ConnectionHandler(ip, port);
+    this.#connectionHandler.onConnection(this.#onConnect.bind(this));
   }
 
-  #init (config, afterInitCallback) {
+  async #initDatabase (config) {
+    if (config.database) {
+      this.#database = new Database(config.database);
+
+      await this.#database.init();
+    } else {
+      this.#database = null;
+
+      log.info('Database not initialized (missing config)');
+    }
+  }
+
+  get connectionHandler () {
+    return this.#connectionHandler;
+  }
+
+  get motd () {
+    return this.#motd ?? null;
+  }
+
+  async init (config) {
+    log.info('Initializing server...');
+
+    if (!config) {
+      throw new Error(`Invalid config ${config}`);
+    }
+
     if (!config.server || Object.keys(config.server).length === 0) {
       throw new Error(`Invalid server config ${config.server}`);
     }
@@ -87,10 +113,9 @@ class Server {
         : null
     );
 
-    if (typeof motd === 'string' && motd.length > 0) this.#motd = motd;
-
-    this.#initPacketHandler(inPacketPaths);
-    this.#initConnectionHandler(ip, port);
+    if (typeof motd === 'string' && motd.length > 0) {
+      this.#motd = motd;
+    }
 
     if (
       typeof pingIntervalSeconds !== 'number' ||
@@ -102,46 +127,23 @@ class Server {
 
     this.#pingIntervalSeconds = pingIntervalSeconds;
 
-    if (config.database) {
-      this.#database = new Database(config.database);
+    this.#initPacketHandler(inPacketPaths);
+    this.#initConnectionHandler(ip, port);
+    await this.#initDatabase(config);
 
-      this.#database.init().then(afterInitCallback);
-    } else {
-      this.#database = null;
-
-      log.info('Database not initialized (missing config)');
-
-      afterInitCallback();
-    }
-  }
-
-  constructor (config, afterInitCallback) {
-    log.info('Creating server...');
-
-    if (!config) {
-      throw new Error(`Invalid config ${config}`);
-    }
-
-    const initCallback = () => (
-      typeof afterInitCallback === 'function' &&
-      afterInitCallback(this)
-    );
-
-    this.#init(config, initCallback);
-  }
-
-  get connectionHandler () {
-    return this.#connectionHandler;
-  }
-
-  get motd () {
-    return this.#motd ?? null;
+    return this;
   }
 
   listen () {
+    if (!this.#connectionHandler) {
+      throw new Error('Connection handler has not been initialized!');
+    }
+
     this.#connectionHandler.listen();
 
     new Pinger(this, this.#pingIntervalSeconds).start();
+
+    return this;
   }
 }
 

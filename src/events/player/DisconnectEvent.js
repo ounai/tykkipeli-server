@@ -19,9 +19,9 @@ class DisconnectEvent extends Event {
 
     log.debug('Player', chalk.magenta(player.toString()), `disconnecting (state=${chalk.magenta(gameState.name)})`);
 
-    if (gameState.name === 'LOBBY') new PartLobbyEvent(server, player);
-    else if (gameState.name === 'GAME_LOBBY') new PartGameLobbyEvent(server, player);
-    else if (gameState.name === 'GAME') new PartGameEvent(server, player);
+    if (gameState.name === 'LOBBY') new PartLobbyEvent(server, player).fire();
+    else if (gameState.name === 'GAME_LOBBY') new PartGameLobbyEvent(server, player).fire();
+    else if (gameState.name === 'GAME') new PartGameEvent(server, player).fire();
 
     await player.setConnected(false);
 
