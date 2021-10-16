@@ -1,4 +1,4 @@
-'use strcit';
+'use strict';
 
 const chalk = require('chalk');
 
@@ -13,7 +13,7 @@ class Broadcast {
   #packet;
   #server;
 
-  constructor(players, packet, server) {
+  constructor (players, packet, server) {
     if (!(packet instanceof OutPacket)) throw new Error(`Invalid packet ${packet}`);
     if (!server) throw new Error(`Invalid server ${server}`);
 
@@ -22,7 +22,7 @@ class Broadcast {
     this.#server = server;
   }
 
-  async #writeToPlayer(player) {
+  async #writeToPlayer (player) {
     if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
 
     await player.reload();
@@ -38,11 +38,13 @@ class Broadcast {
         log.error(`Could not write broadcast to player ${chalk.magenta(player.toString())}:\n`, err);
       }
     } else {
-      log.debug('Not sending', this.#packet.constructor.name, 'to', chalk.magenta(player.toString()), '(player not connected)');
+      const packetName = this.#packet.constructor.name;
+
+      log.debug('Not sending', packetName, 'to', chalk.magenta(player.toString()), '(player not connected)');
     }
   }
 
-  async writeAll() {
+  async writeAll () {
     if (this.#players.length === 0) {
       log.debug(`Not broadcasting ${this.#packet.constructor.name}, empty audience`);
     } else {
@@ -62,4 +64,3 @@ class Broadcast {
 }
 
 module.exports = Broadcast;
-

@@ -9,7 +9,7 @@ class Pinger {
   #intervalSeconds;
   #intervalId;
 
-  #ping() {
+  #ping () {
     const connections = this.#server.connectionHandler.connections;
 
     if (connections.length > 0) {
@@ -21,13 +21,13 @@ class Pinger {
     }
   }
 
-  constructor(server, intervalSeconds) {
+  constructor (server, intervalSeconds) {
     this.#server = server;
     this.#intervalSeconds = intervalSeconds;
     this.#intervalId = null;
   }
 
-  start() {
+  start () {
     if (this.#intervalId === null) {
       log.debug('Start pinging');
 
@@ -37,7 +37,7 @@ class Pinger {
     }
   }
 
-  stop() {
+  stop () {
     if (this.#intervalId === null) {
       log.debug('Cannot stop pinging, not running');
     } else {
@@ -50,4 +50,3 @@ class Pinger {
 }
 
 module.exports = Pinger;
-

@@ -12,25 +12,24 @@ class PacketType {
   #name;
   #code;
 
-  static get(code) {
+  static get (code) {
     return packetTypes[code] || null;
   }
 
-  constructor(name, code) {
+  constructor (name, code) {
     this.#name = name;
     this.#code = code;
 
     packetTypes[code] = this;
   }
 
-  toString() {
+  toString () {
     return `PacketType.${this.#name}`;
   }
 
-  valueOf() {
+  valueOf () {
     return this.#code;
   }
 }
 
 module.exports = PacketType;
-

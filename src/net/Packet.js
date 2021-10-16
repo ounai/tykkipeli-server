@@ -8,8 +8,8 @@ class Packet {
 
   sequenceNumber = null;
 
-  #serializeDataPacket() {
-    if (typeof(this.sequenceNumber) !== 'number' || isNaN(this.sequenceNumber)) {
+  #serializeDataPacket () {
+    if (typeof this.sequenceNumber !== 'number' || isNaN(this.sequenceNumber)) {
       throw new Error(`Cannot serialize data packet, invalid sequence number ${this.sequenceNumber}!`);
     }
 
@@ -20,8 +20,8 @@ class Packet {
     ].join(' ');
   }
 
-  #serializeCommandPacket() {
-    if (typeof(this.args) !== 'object' || this.args.length === 0) {
+  #serializeCommandPacket () {
+    if (typeof this.args !== 'object' || this.args.length === 0) {
       throw new Error('Cannot serialize command packet, no args!');
     }
 
@@ -31,7 +31,7 @@ class Packet {
     ].join(' ');
   }
 
-  #deserializeDataPacket(packet) {
+  #deserializeDataPacket (packet) {
     const splitPacket = packet.split(' ');
 
     if (splitPacket.length < 3) {
@@ -49,17 +49,17 @@ class Packet {
     this.args = splitPacket.slice(2).join(' ').split('\t');
   }
 
-  #cleanArgs() {
+  #cleanArgs () {
     this.args = this.args.map(arg => arg.replace(/\r/g, '').replace(/\n/g, ''));
   }
 
-  #serialize() {
+  #serialize () {
     if (this.type === PacketType.DATA) return this.#serializeDataPacket();
     else if (this.type === PacketType.COMMAND) return this.#serializeCommandPacket();
     else throw new Error(`Cannot serialize packet, invalid type ${this.type}!`);
   }
 
-  #deserialize(packet) {
+  #deserialize (packet) {
     this.type = PacketType.get(packet[0]);
 
     if (this.type === PacketType.DATA) this.#deserializeDataPacket(packet);
@@ -70,53 +70,57 @@ class Packet {
     this.#cleanArgs();
   }
 
-  constructor(packet, type = PacketType.NONE) {
+  constructor (packet, type = PacketType.NONE) {
     this.type = type;
 
-    if (typeof(packet) === 'string') {
+    if (typeof packet === 'string') {
       if (packet.length > 0) this.#deserialize(packet);
-    } else if (typeof(packet) === 'object' && packet.length > 0) {
+    } else if (typeof packet === 'object' && packet.length > 0) {
       this.args = packet;
     } else if (packet !== null && packet !== undefined) {
       throw new Error(`Invalid packet ${packet}`);
     }
   }
 
-  set sequenceNumber(sequenceNumber) {
+  set sequenceNumber (sequenceNumber) {
     if (this.type !== PacketType.DATA) {
       throw new Error(`Cannot set sequence number, unsupported for packets of type ${this.type}!`);
     }
 
-    if (typeof(sequenceNumber) !== 'number' || isNaN(sequenceNumber)) {
+    if (typeof sequenceNumber !== 'number' || isNaN(sequenceNumber)) {
       throw new Error(`Cannot set sequence number, invalid number ${sequenceNumber}!`);
     }
 
     this.sequenceNumber = sequenceNumber;
   }
 
-  toString() {
+  get sequenceNumber () {
+    return this.sequenceNumber;
+  }
+
+  toString () {
     return this.#serialize();
   }
 
-  startsWith(...str) {
+  startsWith (...str) {
     const argsJoined = this.args.join(' ');
     const strJoined = str.join(' ');
 
     return (argsJoined === strJoined || argsJoined.startsWith(strJoined + ' '));
   }
 
-  getString(pos) {
-    if (typeof(this.args) !== 'object' || this.args.length < pos) {
+  getString (pos) {
+    if (typeof this.args !== 'object' || this.args.length < pos) {
       throw new Error(`Cannot get arg ${pos}`);
     }
 
     return this.args[pos];
   }
 
-  getNumber(pos) {
+  getNumber (pos) {
     const n = Number(this.getString(pos));
 
-    if (typeof(n) !== 'number' || isNaN(n)) {
+    if (typeof n !== 'number' || isNaN(n)) {
       throw new Error(`Invalid number at ${pos}`);
     }
 
@@ -125,4 +129,3 @@ class Packet {
 }
 
 module.exports = Packet;
-

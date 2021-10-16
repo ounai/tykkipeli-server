@@ -11,25 +11,24 @@ class PartReason {
   #name;
   #code;
 
-  static get(code) {
+  static get (code) {
     return partReasons[code] || null;
   }
 
-  constructor(name, code) {
+  constructor (name, code) {
     this.#name = name;
     this.#code = code;
 
     partReasons[code] = this;
   }
 
-  toString() {
+  toString () {
     return `PartReason.${this.#name}`;
   }
 
-  valueOf() {
+  valueOf () {
     return this.#code;
   }
 }
 
 module.exports = PartReason;
-

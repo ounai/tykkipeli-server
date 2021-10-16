@@ -20,7 +20,7 @@ class Connection {
   #id;
   #playerId;
 
-  async #socketOnData(buffer) {
+  async #socketOnData (buffer) {
     log.debug(
       chalk.bold('In:'),
       buffer.toString()
@@ -47,7 +47,7 @@ class Connection {
           this.#lastPacketReceived = packet.sequenceNumber;
         }
 
-        if (typeof(this.#onPacketListener) === 'function') {
+        if (typeof this.#onPacketListener === 'function') {
           await this.#onPacketListener(packet);
         }
       }
@@ -61,13 +61,13 @@ class Connection {
     }
   }
 
-  #socketOnEnd() {
+  #socketOnEnd () {
     log.debug('Socket closed');
 
     this.disconnect();
   }
 
-  #socketOnError(err) {
+  #socketOnError (err) {
     if (err.code === 'ECONNRESET') {
       log.debug('Connection reset');
 
@@ -77,7 +77,7 @@ class Connection {
     }
   }
 
-  constructor(id, socket, afterDisconnectCallback) {
+  constructor (id, socket, afterDisconnectCallback) {
     log.info('New connection', id);
 
     this.#id = id;
@@ -89,24 +89,30 @@ class Connection {
     socket.on('error', this.#socketOnError.bind(this));
   }
 
-  set playerId(playerId) {
+  set playerId (playerId) {
     this.#playerId = playerId;
   }
 
-  get id() {
+  get playerId () {
+    return this.#playerId;
+  }
+
+  get id () {
     return this.#id;
   }
 
-  get nextSequenceNumber() {
-    if (this.#lastPacketSent === null) return this.#lastPacketSent = 0;
-    else return ++this.#lastPacketSent;
+  get nextSequenceNumber () {
+    if (this.#lastPacketSent === null) this.#lastPacketSent = 0;
+    else this.#lastPacketSent++;
+
+    return this.#lastPacketSent;
   }
 
-  handshake() {
+  handshake () {
     this.#socket.write('h 1\nc ctr\n', 'utf8');
   }
 
-  write(data, encoding = 'utf8') {
+  write (data, encoding = 'utf8') {
     log.debug(
       chalk.bold('Out:'),
       ['"', '"'].join(
@@ -121,38 +127,38 @@ class Connection {
     ));
   }
 
-  onPacket(listener) {
-    if (typeof(this.#onPacketListener) === 'function') {
+  onPacket (listener) {
+    if (typeof this.#onPacketListener === 'function') {
       throw new Error('onPacket is already being listened!');
     }
 
     this.#onPacketListener = listener;
   }
 
-  onDisconnect(listener) {
-    if (typeof(this.#onDisconnectListener) === 'function') {
+  onDisconnect (listener) {
+    if (typeof this.#onDisconnectListener === 'function') {
       throw new Error('onDisconnect is already being listened!');
     }
 
     this.#onDisconnectListener = listener;
   }
 
-  disconnect() {
+  disconnect () {
     log.debug('Disconnecting client');
 
-    if (typeof(this.#onDisconnectListener) === 'function') {
+    if (typeof this.#onDisconnectListener === 'function') {
       this.#onDisconnectListener();
     }
 
     this.#socket.destroy();
 
-    if (typeof(this.#afterDisconnectCallback) === 'function') {
+    if (typeof this.#afterDisconnectCallback === 'function') {
       this.#afterDisconnectCallback();
     }
   }
 
-  async getPlayer() {
-    if (typeof(this.#playerId) !== 'number') return null;
+  async getPlayer () {
+    if (typeof this.#playerId !== 'number') return null;
 
     const player = await Player.findById(this.#playerId);
 
@@ -164,4 +170,3 @@ class Connection {
 }
 
 module.exports = Connection;
-

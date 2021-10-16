@@ -7,14 +7,14 @@ const { currentTimeString } = require('./Utils');
 const debug = (process.env.NODE_ENV !== 'production');
 const disabled = (process.env.NODE_ENV === 'test');
 
-const maxTitleLength = 16;
+const maxTitleLength = 18;
 
 class Logger {
   title;
 
-  constructor(title) {
+  constructor (title) {
     if (debug) {
-      if (typeof(title) !== 'string') this.title = null;
+      if (typeof title !== 'string') this.title = null;
       else {
         this.title = title.slice(0, maxTitleLength);
 
@@ -34,7 +34,7 @@ class Logger {
     }
   }
 
-  #getLeader(stream, spaces = 0) {
+  #getLeader (stream, spaces = 0) {
     const title = (
       this.title
         ? (' '.repeat(spaces) + ' '.repeat(maxTitleLength - this.title.length) + this.title)
@@ -44,19 +44,19 @@ class Logger {
     return `[${currentTimeString()}, ${stream}]${title}`;
   }
 
-  info(...args) {
+  info (...args) {
     if (!disabled) console.log(chalk.green(this.#getLeader('INFO', 2)), ...args);
   }
 
-  debug(...args) {
+  debug (...args) {
     if (debug && !disabled) console.log(chalk.yellow(this.#getLeader('DEBUG', 1)), ...args);
   }
 
-  error(...args) {
+  error (...args) {
     if (!disabled) console.error(chalk.red(this.#getLeader('ERROR', 1)), ...args);
   }
 
-  debugError(...args) {
+  debugError (...args) {
     if (debug && !disabled) this.error(...args);
   }
 }
@@ -68,4 +68,3 @@ module.exports.info = (...args) => defaultLogger.info(...args);
 module.exports.debug = (...args) => defaultLogger.debug(...args);
 module.exports.error = (...args) => defaultLogger.error(...args);
 module.exports.debugError = (...args) => defaultLogger.debugError(...args);
-

@@ -23,8 +23,7 @@ config.database = {
   enableLogging: false,
   dialect: 'sqlite',
   storage: ':memory:'
-  //storage: './data/db.sqlite'
+  // storage: './data/db.sqlite'
 };
 
 module.exports = config;
-
