@@ -8,7 +8,7 @@ const PartReason = require('../../../../lobby/PartReason');
 const log = require('../../../../Logger')('PartPacket');
 
 class PartPacket extends OutPacket {
-  constructor(player, partReason, gameName) {
+  constructor (player, partReason, gameName) {
     if (!(partReason instanceof PartReason)) {
       throw new Error(`Invalid part reason ${partReason}`);
     }
@@ -18,7 +18,7 @@ class PartPacket extends OutPacket {
     if (partReason === PartReason.USER_LEFT || partReason === PartReason.CONNECTION_PROBLEMS) {
       super('lobby', 'part', player.username, partReason.valueOf());
     } else {
-      if (typeof(gameName) !== 'string' || gameName.length === 0) {
+      if (typeof gameName !== 'string' || gameName.length === 0) {
         throw new Error(`Invalid game name ${gameName}`);
       }
 
@@ -28,4 +28,3 @@ class PartPacket extends OutPacket {
 }
 
 module.exports = PartPacket;
-

@@ -3,7 +3,7 @@
 const OutPacket = require('./OutPacket');
 
 class BasicInfoPacket extends OutPacket {
-  constructor(player) {
+  constructor (player) {
     const isRegistered = player.isRegistered ? 't' : 'f';
     const accessLevel = player.accessLevel;
     const creditAmount = player.creditAmount;
@@ -15,4 +15,3 @@ class BasicInfoPacket extends OutPacket {
 }
 
 module.exports = BasicInfoPacket;
-

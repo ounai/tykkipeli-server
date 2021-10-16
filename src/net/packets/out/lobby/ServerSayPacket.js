@@ -1,10 +1,10 @@
-'use strcit';
+'use strict';
 
 const OutPacket = require('../OutPacket');
 
 class ServerSayPacket extends OutPacket {
-  constructor(message) {
-    if (typeof(message) !== 'string' || message.length === 0) {
+  constructor (message) {
+    if (typeof message !== 'string' || message.length === 0) {
       throw new Error(`Invalid message ${message}`);
     }
 
@@ -13,4 +13,3 @@ class ServerSayPacket extends OutPacket {
 }
 
 module.exports = ServerSayPacket;
-

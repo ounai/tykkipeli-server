@@ -6,7 +6,7 @@ const Player = require('../../../../db/models/Player');
 const GamePlayer = require('../../../../db/models/GamePlayer');
 
 class OwnInfoPacket extends OutPacket {
-  constructor(player, gamePlayer) {
+  constructor (player, gamePlayer) {
     if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
     if (!(gamePlayer instanceof GamePlayer)) throw new Error(`Invalid game player ${gamePlayer}`);
 
@@ -22,4 +22,3 @@ class OwnInfoPacket extends OutPacket {
 }
 
 module.exports = OwnInfoPacket;
-

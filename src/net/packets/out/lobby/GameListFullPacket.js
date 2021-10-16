@@ -4,7 +4,7 @@ const OutPacket = require('../OutPacket');
 const Game = require('../../../../db/models/Game');
 
 class GameListFullPacket extends OutPacket {
-  async #getArgs() {
+  async #getArgs () {
     const games = await Game.findAll();
     const gameStrings = [];
 
@@ -15,11 +15,10 @@ class GameListFullPacket extends OutPacket {
     return ['lobby', 'gamelist', 'full', games.length, ...gameStrings];
   }
 
-  constructor() {
+  constructor () {
     super();
     super.asyncArgs(this.#getArgs);
   }
 }
 
 module.exports = GameListFullPacket;
-

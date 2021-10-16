@@ -3,7 +3,7 @@
 const OutPacket = require('../OutPacket');
 
 class PlayersPacket extends OutPacket {
-  async #getArgs(players) {
+  async #getArgs (players) {
     const playerInfoStrings = [];
 
     for (const player of players) {
@@ -13,11 +13,10 @@ class PlayersPacket extends OutPacket {
     return ['game', 'players', ...playerInfoStrings];
   }
 
-  constructor(players) {
+  constructor (players) {
     super();
     super.asyncArgs(this.#getArgs.bind(this, players));
   }
 }
 
 module.exports = PlayersPacket;
-

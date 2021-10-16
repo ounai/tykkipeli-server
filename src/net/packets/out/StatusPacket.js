@@ -3,10 +3,9 @@
 const OutPacket = require('./OutPacket');
 
 class StatusPacket extends OutPacket {
-  constructor(status) {
+  constructor (status) {
     super('status', status);
   }
 }
 
 module.exports = StatusPacket;
-

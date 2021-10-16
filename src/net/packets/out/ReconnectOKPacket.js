@@ -4,11 +4,10 @@ const OutPacket = require('./OutPacket');
 const PacketType = require('../../PacketType');
 
 class ReconnectOKPacket extends OutPacket {
-  constructor() {
+  constructor () {
     super('rcok');
     super.setType(PacketType.COMMAND);
   }
 }
 
 module.exports = ReconnectOKPacket;
-

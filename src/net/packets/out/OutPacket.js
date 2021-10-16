@@ -13,16 +13,16 @@ class OutPacket {
   #busy = false;
   #busyCallback = null;
 
-  constructor(...args) {
+  constructor (...args) {
     this.#packet = new Packet();
     this.#packet.type = PacketType.DATA;
     this.#packet.args = args;
   }
 
-  async #asyncArgs(argsFunction) {
+  async #asyncArgs (argsFunction) {
     this.#packet.args = await argsFunction();
 
-    if (typeof(this.#busyCallback) === 'function') {
+    if (typeof this.#busyCallback === 'function') {
       this.#busyCallback();
       this.#busyCallback = null;
     }
@@ -30,8 +30,11 @@ class OutPacket {
     this.#busy = false;
   }
 
-  async #writePacket(connection) {
-    log.debug(`Writing packet ${this.constructor.name}:`, chalk.magenta(this.#packet.type.toString()), this.#packet.args);
+  async #writePacket (connection) {
+    const packetName = this.constructor.name;
+    const packetTypeStr = this.#packet.type.toString();
+
+    log.debug(`Writing packet ${packetName}:`, chalk.magenta(packetTypeStr), this.#packet.args);
 
     if (!(this.#packet.type instanceof PacketType)) {
       throw new Error(`Invalid packet type ${this.#packet.type}`);
@@ -44,18 +47,18 @@ class OutPacket {
     await connection.write(this.#packet.toString() + '\n');
   }
 
-  setType(type) {
+  setType (type) {
     if (type instanceof PacketType) this.#packet.type = type;
     else throw new Error(`Invalid packet type ${type}`);
   }
 
-  asyncArgs(argsFunction) {
+  asyncArgs (argsFunction) {
     this.#busy = true;
 
     this.#asyncArgs(argsFunction);
   }
 
-  write(connection) {
+  write (connection) {
     return new Promise(resolve => {
       log.debug(`${this.constructor.name} write(), busy:`, this.#busy);
 
@@ -72,4 +75,3 @@ class OutPacket {
 }
 
 module.exports = OutPacket;
-

@@ -3,7 +3,7 @@
 const OutPacket = require('../OutPacket');
 
 class JoinPacket extends OutPacket {
-  async #getArgs(player) {
+  async #getArgs (player) {
     return [
       'game',
       'join',
@@ -11,11 +11,10 @@ class JoinPacket extends OutPacket {
     ];
   }
 
-  constructor(player) {
+  constructor (player) {
     super();
     super.asyncArgs(this.#getArgs.bind(this, player));
   }
 }
 
 module.exports = JoinPacket;
-

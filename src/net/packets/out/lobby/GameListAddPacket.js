@@ -3,17 +3,16 @@
 const OutPacket = require('../OutPacket');
 
 class GameListAddPacket extends OutPacket {
-  async #getArgs(game) {
+  async #getArgs (game) {
     const gameListItem = await game.getGameListItem();
 
     return ['lobby', 'gamelist', 'add', ...gameListItem];
   }
 
-  constructor(game) {
+  constructor (game) {
     super();
     super.asyncArgs(this.#getArgs.bind(this, game));
   }
 }
 
 module.exports = GameListAddPacket;
-

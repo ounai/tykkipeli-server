@@ -3,12 +3,12 @@
 const OutPacket = require('../OutPacket');
 
 class PrivateSayPacket extends OutPacket {
-  constructor(fromUsername, message) {
-    if (typeof(fromUsername) !== 'string' || fromUsername.length === 0) {
+  constructor (fromUsername, message) {
+    if (typeof fromUsername !== 'string' || fromUsername.length === 0) {
       throw new Error(`Invalid username ${fromUsername}`);
     }
 
-    if (typeof(message) !== 'string' || message.length === 0) {
+    if (typeof message !== 'string' || message.length === 0) {
       throw new Error(`Invalid message ${message}`);
     }
 
@@ -17,4 +17,3 @@ class PrivateSayPacket extends OutPacket {
 }
 
 module.exports = PrivateSayPacket;
-

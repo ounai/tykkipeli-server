@@ -3,10 +3,9 @@
 const OutPacket = require('./OutPacket');
 
 class VersionOKPacket extends OutPacket {
-  constructor() {
+  constructor () {
     super('versok');
   }
 }
 
 module.exports = VersionOKPacket;
-

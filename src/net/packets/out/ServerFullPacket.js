@@ -3,10 +3,9 @@
 const OutPacket = require('./OutPacket');
 
 class ServerFullPacket extends OutPacket {
-  constructor() {
+  constructor () {
     super('error', 'serverfull');
   }
 }
 
 module.exports = ServerFullPacket;
-

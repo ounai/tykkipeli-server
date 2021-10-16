@@ -3,7 +3,7 @@
 const OutPacket = require('../OutPacket');
 
 class UsersPacket extends OutPacket {
-  constructor(player, otherPlayersInLobby) {
+  constructor (player, otherPlayersInLobby) {
     const ownInfoString = player.getUserInfoString();
     const otherPlayersInfoStrings = otherPlayersInLobby.map(player => player.getUserInfoString());
 
@@ -12,4 +12,3 @@ class UsersPacket extends OutPacket {
 }
 
 module.exports = UsersPacket;
-
