@@ -5,12 +5,12 @@ const PingPacket = require('./packets/out/PingPacket');
 const log = require('../Logger')('Pinger');
 
 class Pinger {
-  #server;
+  #connectionHandler;
   #intervalSeconds;
   #intervalId;
 
   #ping () {
-    const connections = this.#server.connectionHandler.connections;
+    const connections = this.#connectionHandler.connections;
 
     if (connections.length > 0) {
       log.debug('Pinging', connections.length, 'connections...');
@@ -21,8 +21,16 @@ class Pinger {
     }
   }
 
-  constructor (server, intervalSeconds) {
-    this.#server = server;
+  constructor (connectionHandler, intervalSeconds) {
+    if (
+      typeof intervalSeconds !== 'number' ||
+      isNaN(intervalSeconds) ||
+      intervalSeconds <= 0
+    ) {
+      throw new Error(`Invalid ping interval ${intervalSeconds}`);
+    }
+
+    this.#connectionHandler = connectionHandler;
     this.#intervalSeconds = intervalSeconds;
     this.#intervalId = null;
   }

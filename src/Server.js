@@ -17,7 +17,7 @@ class Server {
   #packetHandler;
   #maxPlayers;
   #motd;
-  #pingIntervalSeconds;
+  #pinger;
 
   async #isFull () {
     if (this.#maxPlayers === null) return false;
@@ -117,19 +117,10 @@ class Server {
       this.#motd = motd;
     }
 
-    if (
-      typeof pingIntervalSeconds !== 'number' ||
-      isNaN(pingIntervalSeconds) ||
-      pingIntervalSeconds <= 0
-    ) {
-      throw new Error(`Invalid ping interval ${pingIntervalSeconds}`);
-    }
-
-    this.#pingIntervalSeconds = pingIntervalSeconds;
-
     this.#initPacketHandler(inPacketPaths);
     this.#initConnectionHandler(ip, port);
     await this.#initDatabase(config);
+    this.#pinger = new Pinger(this.#connectionHandler, pingIntervalSeconds);
 
     return this;
   }
@@ -140,8 +131,7 @@ class Server {
     }
 
     this.#connectionHandler.listen();
-
-    new Pinger(this, this.#pingIntervalSeconds).start();
+    this.#pinger.start();
 
     return this;
   }

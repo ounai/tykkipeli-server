@@ -140,6 +140,6 @@ describe('listen', () => {
     server.listen();
 
     expect(Pinger)
-      .toHaveBeenCalledWith(server, config.server.pingIntervalSeconds);
+      .toHaveBeenCalledWith(server.connectionHandler, config.server.pingIntervalSeconds);
   });
 });
