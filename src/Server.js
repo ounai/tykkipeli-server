@@ -1,40 +1,29 @@
 'use strict';
 
 const Database = require('./db/Database');
-const Player = require('./db/models/Player');
 const DisconnectEvent = require('./events/player/DisconnectEvent');
 const ConnectionHandler = require('./net/ConnectionHandler');
 const PacketHandler = require('./net/PacketHandler');
 const Pinger = require('./net/Pinger');
 const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
 const Utils = require('./Utils');
+const ConnectionCount = require('./ConnectionCount');
 
 const log = require('./Logger')('Server');
 
 class Server {
-  #connectionHandler;
-  #database;
-  #packetHandler;
-  #maxPlayers;
-  #motd;
-  #pinger;
-
-  async #isFull () {
-    if (this.#maxPlayers === null) return false;
-    else {
-      const connectedPlayers = await Player.countConnected();
-
-      log.info(
-        'Player count before join:',
-        connectedPlayers, '/', this.#maxPlayers
-      );
-
-      return (connectedPlayers >= this.#maxPlayers);
-    }
-  }
+  #connectionHandler = null;
+  #database = null;
+  #packetHandler = null;
+  #maxPlayers = null;
+  #motd = null;
+  #pinger = null;
+  #connectionCount = null;
 
   async #onDisconnect (connection) {
     log.debug('Connection', connection.id, 'disconnected');
+
+    this.#connectionCount.onDisconnect();
 
     const player = await connection.getPlayer();
 
@@ -42,15 +31,16 @@ class Server {
   }
 
   async #onConnect (connection) {
-    if (await this.#isFull()) {
+    if (await this.#connectionCount.isFull()) {
       log.info('Max number of players reached, not accepting connection');
 
       return new ServerFullPacket().write(connection);
     }
 
-    const packetHandler = this.#packetHandler;
+    log.debug(this.#connectionCount.toString());
+    this.#connectionCount.onConnect();
 
-    connection.onPacket(packetHandler.onPacket.bind(packetHandler, connection));
+    connection.onPacket(this.#packetHandler.onPacket.bind(this.#packetHandler, connection));
     connection.onDisconnect(this.#onDisconnect.bind(this, connection));
     connection.handshake();
   }
@@ -70,8 +60,6 @@ class Server {
 
       await this.#database.init();
     } else {
-      this.#database = null;
-
       log.info('Database not initialized (missing config)');
     }
   }
@@ -107,20 +95,17 @@ class Server {
     Utils.validateIP(ip);
     Utils.validatePort(port);
 
-    this.#maxPlayers = (
-      typeof maxPlayers === 'number' && !isNaN(maxPlayers)
-        ? maxPlayers
-        : null
-    );
-
     if (typeof motd === 'string' && motd.length > 0) {
       this.#motd = motd;
     }
 
     this.#initPacketHandler(inPacketPaths);
     this.#initConnectionHandler(ip, port);
-    await this.#initDatabase(config);
+
     this.#pinger = new Pinger(this.#connectionHandler, pingIntervalSeconds);
+    this.#connectionCount = new ConnectionCount(maxPlayers);
+
+    await this.#initDatabase(config);
 
     return this;
   }

@@ -4,8 +4,8 @@ const OutPacket = require('../OutPacket');
 
 class UsersPacket extends OutPacket {
   constructor (player, otherPlayersInLobby) {
-    const ownInfoString = player.getUserInfoString();
-    const otherPlayersInfoStrings = otherPlayersInLobby.map(player => player.getUserInfoString());
+    const ownInfoString = player.getLobbyInfoString();
+    const otherPlayersInfoStrings = otherPlayersInLobby.map(player => player.getLobbyInfoString());
 
     super('lobby', 'users', ownInfoString, ...otherPlayersInfoStrings);
   }

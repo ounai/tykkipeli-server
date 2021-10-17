@@ -5,7 +5,7 @@ const net = require('net');
 const Connection = require('./Connection');
 const Player = require('../db/models/Player');
 
-const log = require('../Logger')('ConnHandler');
+const log = require('../Logger')('ConnectionHandler');
 
 class ConnectionHandler {
   #ip;

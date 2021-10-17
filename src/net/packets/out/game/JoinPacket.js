@@ -7,7 +7,7 @@ class JoinPacket extends OutPacket {
     return [
       'game',
       'join',
-      await player.getPlayerInfoString()
+      await player.getGameInfoString()
     ];
   }
 

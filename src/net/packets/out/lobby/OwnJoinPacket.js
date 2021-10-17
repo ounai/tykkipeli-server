@@ -4,7 +4,7 @@ const OutPacket = require('../OutPacket');
 
 class OwnJoinPacket extends OutPacket {
   constructor (player) {
-    super('lobby', 'ownjoin', player.getUserInfoString(3));
+    super('lobby', 'ownjoin', player.getLobbyInfoString());
   }
 }
 

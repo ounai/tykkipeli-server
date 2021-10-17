@@ -7,7 +7,7 @@ class PlayersPacket extends OutPacket {
     const playerInfoStrings = [];
 
     for (const player of players) {
-      playerInfoStrings.push(await player.getPlayerInfoString());
+      playerInfoStrings.push(await player.getGameInfoString());
     }
 
     return ['game', 'players', ...playerInfoStrings];

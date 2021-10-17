@@ -9,16 +9,16 @@ const Player = require('../db/models/Player');
 const log = require('../Logger')('Connection');
 
 class Connection {
-  #socket;
-  #onPacketListener;
-  #onDisconnectListener;
-  #afterDisconnectCallback;
+  #socket = null;
+  #onPacketListener = null;
+  #onDisconnectListener = null;
+  #afterDisconnectCallback = null;
 
   #lastPacketSent = null;
   #lastPacketReceived = null;
 
-  #id;
-  #playerId;
+  #id = null;
+  #playerId = null;
 
   async #socketOnData (buffer) {
     log.debug(
@@ -82,7 +82,10 @@ class Connection {
 
     this.#id = id;
     this.#socket = socket;
-    this.#afterDisconnectCallback = afterDisconnectCallback;
+
+    if (typeof afterDisconnectCallback === 'function') {
+      this.#afterDisconnectCallback = afterDisconnectCallback;
+    }
 
     socket.on('data', this.#socketOnData.bind(this));
     socket.on('end', this.#socketOnEnd.bind(this));

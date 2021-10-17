@@ -167,8 +167,7 @@ class Player extends Model {
     );
   }
 
-  // TODO rename to getLobbyInfoString
-  getUserInfoString (version = 3) {
+  getLobbyInfoString (version = 3) {
     if (version === 3) {
       const flags = this.#getUserInfoFlags();
 
@@ -187,8 +186,7 @@ class Player extends Model {
     }
   }
 
-  // TODO rename to getGameInfoString
-  async getPlayerInfoString (includeId = true) {
+  async getGameInfoString (includeId = true) {
     const info = [];
 
     if (includeId) {
