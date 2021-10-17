@@ -96,25 +96,6 @@ describe('server initialization', () => {
   });
 });
 
-describe('motd', () => {
-  it('returns motd when set', async () => {
-    const motd = 'test motd string';
-    const server = new Server();
-
-    await server.init(getConfig({ motd }));
-
-    expect(server.motd).toEqual(motd);
-  });
-
-  it('returns null motd when not set or empty', () => {
-    expect(new Server(getConfig()).motd)
-      .toBeNull();
-
-    expect(new Server(getConfig({ motd: '' })).motd)
-      .toBeNull();
-  });
-});
-
 describe('listen', () => {
   let config;
 

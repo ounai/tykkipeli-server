@@ -8,6 +8,7 @@ const Pinger = require('./net/Pinger');
 const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
 const Utils = require('./Utils');
 const ConnectionCount = require('./ConnectionCount');
+const MOTD = require('./MOTD');
 
 const log = require('./Logger')('Server');
 
@@ -69,7 +70,7 @@ class Server {
   }
 
   get motd () {
-    return this.#motd ?? null;
+    return this.#motd;
   }
 
   async init (config) {
@@ -95,15 +96,12 @@ class Server {
     Utils.validateIP(ip);
     Utils.validatePort(port);
 
-    if (typeof motd === 'string' && motd.length > 0) {
-      this.#motd = motd;
-    }
-
     this.#initPacketHandler(inPacketPaths);
     this.#initConnectionHandler(ip, port);
 
     this.#pinger = new Pinger(this.#connectionHandler, pingIntervalSeconds);
     this.#connectionCount = new ConnectionCount(maxPlayers);
+    this.#motd = new MOTD(motd);
 
     await this.#initDatabase(config);
 

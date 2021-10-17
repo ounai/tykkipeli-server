@@ -42,10 +42,12 @@ class LoginPacket extends InPacket {
       new OwnJoinPacket(player).write(connection);
       new NumberOfUsersPacket(player).write(connection);
 
-      if (typeof this.server.motd === 'string' && this.server.motd.length > 0) {
-        log.debug('Writing motd:', this.server.motd);
+      if (this.server.motd.isSet()) {
+        const motd = this.server.motd.toString();
 
-        new ServerSayPacket(this.server.motd).write(connection);
+        log.debug('Writing motd:', motd);
+
+        new ServerSayPacket(motd).write(connection);
       }
 
       await player.setHasLoggedIn(true);
