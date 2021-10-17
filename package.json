@@ -15,9 +15,10 @@
   "scripts": {
     "start": "NODE_ENV=production node index.js",
     "dev": "nodemon index.js",
-    "test": "jest --verbose --runInBand",
+    "test": "eslint . && jest --verbose --runInBand",
     "lint": "eslint .",
     "eslint": "eslint",
+    "jest": "jest --verbose --runInBand",
     "test:watch": "jest --watch --verbose --runInBand",
     "test:coverage": "jest --coverage"
   },
