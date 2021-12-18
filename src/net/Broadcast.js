@@ -45,20 +45,26 @@ class Broadcast {
   }
 
   async writeAll () {
+    const packetName = this.#packet.constructor.name;
+
     if (this.#players.length === 0) {
-      log.debug(`Not broadcasting ${this.#packet.constructor.name}, empty audience`);
+      log.debug(`Not broadcasting ${packetName}, empty audience`);
     } else {
-      log.debug('Broadcasting', this.#packet.constructor.name, 'to', this.#players.length, 'players');
+      log.debug('Broadcasting', packetName, 'to', this.#players.length, 'players');
 
       for (const player of this.#players) {
         if (player instanceof Player) {
           await this.#writeToPlayer(player);
         } else if (player instanceof GamePlayer) {
           await this.#writeToPlayer(await player.getPlayer());
+        } else {
+          log.error(`Broadcast of ${packetName} given invalid player:`, player);
+
+          throw new Error(`Invalid player ${player}`);
         }
       }
 
-      log.debug('Broadcast complete');
+      log.debug(`Broadcast of ${packetName} complete`);
     }
   }
 }

@@ -5,7 +5,14 @@ const chalk = require('chalk');
 const PacketType = require('../../PacketType');
 const Packet = require('../../Packet');
 
+const config = require('../../../../config');
 const log = require('../../../Logger')('OutPacket');
+
+const noLogPackets = [];
+
+if (config.logging.disablePing) {
+  noLogPackets.push('PingPacket');
+}
 
 class OutPacket {
   #packet;
@@ -34,7 +41,9 @@ class OutPacket {
     const packetName = this.constructor.name;
     const packetTypeStr = this.#packet.type.toString();
 
-    log.debug(`Writing packet ${packetName}:`, chalk.magenta(packetTypeStr), this.#packet.args);
+    if (!noLogPackets.includes(packetName)) {
+      log.debug(`Writing packet ${packetName}:`, chalk.magenta(packetTypeStr), this.#packet.args);
+    }
 
     if (!(this.#packet.type instanceof PacketType)) {
       throw new Error(`Invalid packet type ${this.#packet.type}`);
@@ -60,7 +69,11 @@ class OutPacket {
 
   write (connection) {
     return new Promise(resolve => {
-      log.debug(`${this.constructor.name} write(), busy:`, this.#busy);
+      const packetName = this.constructor.name;
+
+      if (!noLogPackets.includes(packetName)) {
+        log.debug(`${packetName} write(), busy:`, this.#busy);
+      }
 
       const writeAndResolve = async () => {
         await this.#writePacket(connection);

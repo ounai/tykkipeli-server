@@ -10,6 +10,10 @@ const inPacketPaths = [
   './src/net/packets/in/game'
 ];
 
+config.logging = {
+  disablePing: true // No logging of ping related stuff
+};
+
 config.server = {
   ip: process.env.ACANNONS_IP || 'localhost',
   port: process.env.ACANNONS_PORT || 4242,

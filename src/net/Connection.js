@@ -6,7 +6,18 @@ const Packet = require('./Packet');
 const PacketType = require('./PacketType');
 const Player = require('../db/models/Player');
 
+const config = require('../../config');
 const log = require('../Logger')('Connection');
+
+const noLogPacketStrings = {
+  in: [],
+  out: []
+};
+
+if (config.logging.disablePing) {
+  noLogPacketStrings.in.push(`"c pong${chalk.blue('\\n')}"`);
+  noLogPacketStrings.out.push(`"c ping${chalk.blue('\\n')}"`);
+}
 
 class Connection {
   #socket = null;
@@ -21,17 +32,22 @@ class Connection {
   #playerId = null;
 
   async #socketOnData (buffer) {
-    log.debug(
-      chalk.bold('In:'),
-      buffer.toString()
-        .replace(/\r/g, chalk.blue('\\r'))
-        .replace(/\n/g, chalk.blue('\\n') + '\n')
-        .split('\n')
-        .filter(s => !!s)
-        .map(s => s.replace(/\t/g, chalk.blue('\\t')))
-        .map(s => `"${s}"`)
-        .join(', ')
-    );
+    const packetString = buffer.toString()
+      .replace(/\r/g, chalk.blue('\\r'))
+      .replace(/\n/g, chalk.blue('\\n') + '\n')
+      .split('\n')
+      .filter(s => !!s)
+      .map(s => s.replace(/\t/g, chalk.blue('\\t')))
+      .map(s => `"${s}"`)
+      .join(', ');
+
+    if (!noLogPacketStrings.in.includes(packetString)) {
+      log.debug(
+        chalk.bold('In:'),
+        packetString,
+        noLogPacketStrings.in[0]
+      );
+    }
 
     try {
       for (const packetString of buffer.toString().split('\n')) {
@@ -116,14 +132,15 @@ class Connection {
   }
 
   write (data, encoding = 'utf8') {
-    log.debug(
-      chalk.bold('Out:'),
-      ['"', '"'].join(
-        data.replace(/\r/g, chalk.blue('\\r'))
-          .replace(/\n/g, chalk.blue('\\n'))
-          .replace(/\t/g, chalk.blue('\\t'))
-      )
+    const packetString = ['"', '"'].join(
+      data.replace(/\r/g, chalk.blue('\\r'))
+        .replace(/\n/g, chalk.blue('\\n'))
+        .replace(/\t/g, chalk.blue('\\t'))
     );
+
+    if (!noLogPacketStrings.out.includes(packetString)) {
+      log.debug(chalk.bold('Out:'), packetString);
+    }
 
     return new Promise(resolve => (
       this.#socket.write(data, encoding, resolve)

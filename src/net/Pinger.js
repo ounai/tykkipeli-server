@@ -2,6 +2,7 @@
 
 const PingPacket = require('./packets/out/PingPacket');
 
+const config = require('../../config');
 const log = require('../Logger')('Pinger');
 
 class Pinger {
@@ -13,7 +14,9 @@ class Pinger {
     const connections = this.#connectionHandler.connections;
 
     if (connections.length > 0) {
-      log.debug('Pinging', connections.length, 'connections...');
+      if (!config.logging.disablePing) {
+        log.debug('Pinging', connections.length, 'connections...');
+      }
 
       for (const connection of connections) {
         new PingPacket().write(connection);
@@ -41,13 +44,13 @@ class Pinger {
 
       this.#intervalId = setInterval(this.#ping.bind(this), this.#intervalSeconds * 1000);
     } else {
-      log.debug('Cannot start pinging, already running');
+      log.error('Cannot start pinging, already running');
     }
   }
 
   stop () {
     if (this.#intervalId === null) {
-      log.debug('Cannot stop pinging, not running');
+      log.error('Cannot stop pinging, not running');
     } else {
       log.debug('Stop pinging');
 

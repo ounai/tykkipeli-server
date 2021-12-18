@@ -4,8 +4,15 @@ const chalk = require('chalk');
 
 const InPacket = require('./packets/in/InPacket');
 
+const config = require('../../config');
 const log = require('../Logger')('PacketHandler');
 const { getFilenamesInDirectory } = require('../Utils');
+
+const noLogPackets = [];
+
+if (config.logging.disablePing) {
+  noLogPackets.push('PongPacket');
+}
 
 class PacketHandler {
   #server;
@@ -45,11 +52,14 @@ class PacketHandler {
 
     for (const packetHandler of this.#packetHandlers) {
       if (packet.type === packetHandler.type && packetHandler.match(packet)) {
-        log.debug('Packet matches', packetHandler.constructor.name);
+        const packetName = packetHandler.constructor.name;
+        const logPacket = !noLogPackets.includes(packetName);
+
+        if (logPacket) log.debug('Packet matches', packetName);
 
         await packetHandler.handle(connection, packet);
 
-        log.info(packetHandler.constructor.name, 'handled!');
+        if (logPacket) log.info(packetName, 'handled!');
 
         handled = true;
       }
