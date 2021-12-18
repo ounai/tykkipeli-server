@@ -84,11 +84,11 @@ class ConnectionHandler {
       throw new Error(`Player has invalid connection id: ${connectionId}`);
     }
 
-    if (!this.#connections[player.connectionId]) {
+    if (!this.#connections[connectionId]) {
       throw new Error(`Could not find connection for player ${player}`);
     }
 
-    return this.#connections[player.connectionId];
+    return this.#connections[connectionId];
   }
 }
 

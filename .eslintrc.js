@@ -22,10 +22,11 @@ module.exports = {
     'prefer-arrow'
   ],
   rules: {
-    'semi': ['error', 'always'],
-    'eol-last': ['error', 'always'],
     'max-len': ['warn', { 'code': 120 }],
     'max-lines-per-function': ['warn', 50],
+    'semi': ['error', 'always'],
+    'eol-last': ['error', 'always'],
+    'no-console': ['warn'],
     'strict': ['error', 'global'],
     'no-multiple-empty-lines': [
       'error',
