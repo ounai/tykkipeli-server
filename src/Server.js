@@ -28,7 +28,7 @@ class Server {
 
     const player = await connection.getPlayer();
 
-    if (player) new DisconnectEvent(this, player).fire();
+    if (player) new DisconnectEvent(this, connection, player).fire();
   }
 
   async #onConnect (connection) {
