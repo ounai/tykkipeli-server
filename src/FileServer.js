@@ -51,7 +51,7 @@ class FileServer {
     this.#app.use(express.static(path.join(__dirname, '..', this.#servePath)));
 
     // Index path
-    this.#app.use('/', this.#indexRoute.bind(this));
+    this.#app.get('/', this.#indexRoute.bind(this));
 
     return this;
   }
