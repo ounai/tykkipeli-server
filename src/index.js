@@ -1,9 +1,9 @@
 'use strict';
 
-const Server = require('./src/Server');
+const Server = require('./Server');
 
 const config = require('./config');
-const log = require('./src/Logger')('index');
+const log = require('./Logger')('index');
 
 const init = async () => {
   const server = new Server();

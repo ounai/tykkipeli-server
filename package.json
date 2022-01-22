@@ -13,10 +13,10 @@
     "test": "tests"
   },
   "scripts": {
-    "start": "NODE_ENV=production node index.js",
-    "dev": "nodemon index.js",
+    "start": "NODE_ENV=production node src/index.js",
+    "dev": "nodemon src/index.js",
     "test": "eslint . && jest --verbose --runInBand",
-    "lint": "eslint .",
+    "lint": "eslint ./src",
     "eslint": "eslint",
     "jest": "jest --verbose --runInBand",
     "test:watch": "jest --watch --verbose --runInBand",

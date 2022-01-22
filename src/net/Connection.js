@@ -6,7 +6,7 @@ const Packet = require('./Packet');
 const PacketType = require('./PacketType');
 const Player = require('../db/models/Player');
 
-const config = require('../../config');
+const config = require('../config');
 const log = require('../Logger')('Connection');
 
 const noLogPacketStrings = {

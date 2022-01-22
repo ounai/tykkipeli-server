@@ -5,7 +5,7 @@ const chalk = require('chalk');
 const PacketType = require('../../PacketType');
 const Packet = require('../../Packet');
 
-const config = require('../../../../config');
+const config = require('../../../config');
 const log = require('../../../Logger')('OutPacket');
 
 const noLogPackets = [];

@@ -1,5 +1,6 @@
 'use strict';
 
+const path = require('path');
 const { Sequelize } = require('sequelize');
 
 const log = require('../Logger')('Database');
@@ -20,10 +21,10 @@ class Database {
   }
 
   async #loadModels (modelsPath) {
-    for (const filename of getFilenamesInDirectory(modelsPath, 'js')) {
+    for (const filename of getFilenamesInDirectory(path.join(__dirname, modelsPath), 'js')) {
       log.debug('Loading model file', filename);
 
-      const model = require.main.require(`${modelsPath}/${filename}`);
+      const model = require.main.require(path.join(__dirname, modelsPath, filename));
       const modelName = model.name;
 
       log.debug('Init model', modelName);
@@ -92,7 +93,7 @@ class Database {
 
     this.#models = {};
 
-    await this.#loadModels('./src/db/models');
+    await this.#loadModels('models');
     await this.#initAssociations();
     await this.#setupModels();
 

@@ -28,7 +28,7 @@ class Utils {
 
   static isIP (str) {
     return typeof str === 'string' &&
-      /^([0-9]{1,3}\.){3}[0-9]{1,3}$/.test(str);
+      (/^([0-9]{1,3}\.){3}[0-9]{1,3}$/.test(str) || str === 'localhost');
   }
 
   static isPort (n) {

@@ -1,10 +1,11 @@
 'use strict';
 
+const path = require('path');
 const chalk = require('chalk');
 
 const InPacket = require('./packets/in/InPacket');
 
-const config = require('../../config');
+const config = require('../config');
 const log = require('../Logger')('PacketHandler');
 const { getFilenamesInDirectory } = require('../Utils');
 
@@ -21,12 +22,12 @@ class PacketHandler {
   #registerPacketHandlers (packetHandlersPath) {
     log.debug('Registering packet handlers in', packetHandlersPath);
 
-    const filenames = getFilenamesInDirectory(`${packetHandlersPath}`, 'js');
+    const filenames = getFilenamesInDirectory(path.join(__dirname, packetHandlersPath), 'js');
 
     for (const filename of filenames) {
       log.debug('Registering packet', filename);
 
-      const Handler = require.main.require(`${packetHandlersPath}/${filename}`);
+      const Handler = require.main.require(path.join(__dirname, packetHandlersPath, filename));
       const handler = new Handler(this.#server);
 
       if (handler instanceof InPacket) this.#packetHandlers.push(handler);

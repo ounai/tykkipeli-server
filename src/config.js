@@ -5,9 +5,9 @@ require('dotenv').config();
 const config = {};
 
 const inPacketPaths = [
-  './src/net/packets/in',
-  './src/net/packets/in/lobby',
-  './src/net/packets/in/game'
+  'packets/in',
+  'packets/in/lobby',
+  'packets/in/game'
 ];
 
 config.logging = {
@@ -16,7 +16,7 @@ config.logging = {
 
 config.server = {
   ip: process.env.ACANNONS_IP || 'localhost',
-  port: process.env.ACANNONS_PORT || 4242,
+  port: (process.env.ACANNONS_PORT ? Number(process.env.ACANNONS_PORT) : 4242),
   maxPlayers: 1000, // comment out for unlimited
   pingIntervalSeconds: 10,
   motd: '',

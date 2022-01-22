@@ -2,7 +2,7 @@
 
 const PingPacket = require('./packets/out/PingPacket');
 
-const config = require('../../config');
+const config = require('../config');
 const log = require('../Logger')('Pinger');
 
 class Pinger {
