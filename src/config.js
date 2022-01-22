@@ -23,6 +23,11 @@ config.server = {
   inPacketPaths
 };
 
+config.fileServer = {
+  port: (config.server.port + 1), // default 4243
+  servePath: 'public'
+};
+
 config.database = {
   enableLogging: false,
   dialect: 'sqlite',

@@ -12,7 +12,7 @@ const MOTD = require('./MOTD');
 
 const log = require('./Logger')('Server');
 
-class Server {
+class GameServer {
   #connectionHandler = null;
   #database = null;
   #packetHandler = null;
@@ -120,4 +120,4 @@ class Server {
   }
 }
 
-module.exports = Server;
+module.exports = GameServer;

@@ -1,16 +1,14 @@
 'use strict';
 
-const Server = require('./Server');
+const FileServer = require('./FileServer');
+const GameServer = require('./GameServer');
 
 const config = require('./config');
 const log = require('./Logger')('index');
 
 const init = async () => {
-  const server = new Server();
-
-  await server.init(config);
-
-  server.listen();
+  new FileServer().init(config).listen();
+  (await (new GameServer().init(config))).listen();
 };
 
 log.info('Initializing...');
