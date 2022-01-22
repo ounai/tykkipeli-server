@@ -24,6 +24,23 @@ class FileServer {
     Utils.validatePort(this.#port);
   }
 
+  #onListen () {
+    log.info('Serving files from', this.#servePath, 'on port', this.#port);
+  }
+
+  #indexRoute (req, res) {
+    res.end([
+      'To Whom It May Concern,',
+      '',
+      '\tHello, World!',
+      '',
+      'Yours Sincerely,',
+      '',
+      '\tTykkipeli file server',
+      `\tPort ${this.#port}`
+    ].join('\n'));
+  }
+
   init (config) {
     this.#servePath = config.fileServer.servePath;
     this.#port = config.fileServer.port;
@@ -33,11 +50,10 @@ class FileServer {
     // Setup express middleware for static files
     this.#app.use(express.static(path.join(__dirname, '..', this.#servePath)));
 
-    return this;
-  }
+    // Index path
+    this.#app.use('/', this.#indexRoute.bind(this));
 
-  #onListen () {
-    log.info('Serving files from', this.#servePath, 'on port', this.#port);
+    return this;
   }
 
   listen () {
