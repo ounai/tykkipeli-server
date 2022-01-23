@@ -142,14 +142,22 @@ class Player extends Model {
 
   static async findByUsername (username) {
     return await this.findOne({
-      where: {
-        username
-      }
+      where: { username }
     });
   }
 
   static async isUsernameInUse (username) {
     return !!(await this.findByUsername(username));
+  }
+
+  static async findByGameState (...gameStateNames) {
+    return await this.findAll({
+      where: {
+        isConnected: true,
+        '$GameState.name$': gameStateNames
+      },
+      include: GameState
+    });
   }
 
   #getUserInfoFlags () {
@@ -182,7 +190,7 @@ class Player extends Model {
 
       return '3:' + userInfo.join('^');
     } else {
-      throw new Error(`Invalid user info string version ${version}`);
+      throw new Error(`Unsupported user info string version ${version}`);
     }
   }
 

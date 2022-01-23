@@ -4,10 +4,9 @@ const chalk = require('chalk');
 
 const Event = require('../Event');
 const Player = require('../../db/models/Player');
-const Broadcast = require('../../net/Broadcast');
-const GameListRemovePacket = require('../../net/packets/out/lobby/GameListRemovePacket');
 const JoinLobbyEvent = require('./JoinLobbyEvent');
 const Connection = require('../../net/Connection');
+const DeleteGameEvent = require('../game/DeleteGameEvent');
 
 const log = require('../../Logger')('PartGameLobbyEvent');
 
@@ -24,25 +23,15 @@ class PartGameLobbyEvent extends Event {
     log.debug('Player leaving game lobby', chalk.magenta(game.toString()));
 
     const playerCount = await game.getPlayerCount();
-    const gameString = game.toString();
 
     if (playerCount === 1) {
       log.debug(
         chalk.magenta(player.toString()),
         'is the last player, deleting game',
-        chalk.magenta(gameString)
+        chalk.magenta(game.toString())
       );
 
-      const playersInLobby = await player.findOthersByGameState('LOBBY');
-      const removeGamePacket = new GameListRemovePacket(game);
-
-      new Broadcast(playersInLobby, removeGamePacket, server).writeAll();
-
-      // Also destroys linked GamePlayer
-      await game.destroy();
-
-      log.debug(`Game ${chalk.magenta(gameString)} deleted`);
-
+      new DeleteGameEvent(server, game).fire();
       new JoinLobbyEvent(server, connection, player).fire();
     } else {
       log.debug(
