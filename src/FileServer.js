@@ -2,6 +2,7 @@
 
 const express = require('express');
 const path = require('path');
+const chalk = require('chalk');
 
 const Utils = require('./Utils');
 
@@ -25,7 +26,7 @@ class FileServer {
   }
 
   #onListen () {
-    log.info('Serving files from', this.#servePath, 'on port', this.#port);
+    log.info('Serving files from', chalk.magenta(this.#servePath), 'on port', this.#port);
   }
 
   #indexRoute (req, res) {
@@ -42,13 +43,13 @@ class FileServer {
   }
 
   init (config) {
-    this.#servePath = config.fileServer.servePath;
+    this.#servePath = path.join(__dirname, '..', config.fileServer.servePath);
     this.#port = config.fileServer.port;
 
     this.#validateConfiguration();
 
     // Setup express middleware for static files
-    this.#app.use(express.static(path.join(__dirname, '..', this.#servePath)));
+    this.#app.use(express.static(this.#servePath));
 
     // Index path
     this.#app.get('/', this.#indexRoute.bind(this));
