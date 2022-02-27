@@ -22,9 +22,12 @@ class PartGameLobbyEvent extends Event {
 
     log.debug('Player leaving game lobby', chalk.magenta(game.toString()));
 
+    // Delete game player
+    await (await player.getGamePlayer()).destroy();
+
     const playerCount = await game.getPlayerCount();
 
-    if (playerCount === 1) {
+    if (playerCount === 0) {
       log.debug(
         chalk.magenta(player.toString()),
         'is the last player, deleting game',
@@ -32,7 +35,6 @@ class PartGameLobbyEvent extends Event {
       );
 
       new DeleteGameEvent(server, game).fire();
-      new JoinLobbyEvent(server, connection, player).fire();
     } else {
       log.debug(
         'Removing',
@@ -41,8 +43,21 @@ class PartGameLobbyEvent extends Event {
         chalk.magenta(game.toString())
       );
 
-      // TODO not last player, reshuffle player id's
+      const gamePlayers = await game.getGamePlayers();
+
+      // Resuffle game player id's of remaining players
+      for (let i = 0; i < gamePlayers.length; i++) {
+        if (i !== gamePlayers[i].id) {
+          gamePlayers[i].id = i;
+          await gamePlayers[i].save();
+        }
+      }
+
+      // TODO send updated player list to players in game lobby
+      // TODO update lobby game listing
     }
+
+    new JoinLobbyEvent(server, connection, player).fire();
   }
 }
 
