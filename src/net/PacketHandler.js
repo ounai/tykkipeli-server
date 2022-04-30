@@ -56,7 +56,7 @@ class PacketHandler {
         const packetName = packetHandler.constructor.name;
         const logPacket = !noLogPackets.includes(packetName);
 
-        if (logPacket) log.debug('Packet matches', packetName);
+        if (logPacket) log.debug('Packet matches', chalk.magenta(packetName));
 
         await packetHandler.handle(connection, packet);
 
