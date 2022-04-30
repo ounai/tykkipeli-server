@@ -1,28 +1,22 @@
 'use strict';
 
-const chalk = require('chalk');
-
 const OutPacket = require('../OutPacket');
 const PartReason = require('../../../../lobby/PartReason');
 
-const log = require('../../../../Logger')('PartPacket');
-
 class PartPacket extends OutPacket {
-  constructor (player, partReason, gameName) {
-    if (!(partReason instanceof PartReason)) {
-      throw new Error(`Invalid part reason ${partReason}`);
+  constructor (player, reason, gameName) {
+    if (!(reason instanceof PartReason)) {
+      throw new Error(`Invalid part reason ${reason}`);
     }
 
-    log.debug(chalk.magenta(player.toString()), 'parting lobby:', chalk.magenta(partReason.toString()));
-
-    if (partReason === PartReason.USER_LEFT || partReason === PartReason.CONNECTION_PROBLEMS) {
-      super('lobby', 'part', player.username, partReason.valueOf());
+    if (reason === PartReason.USER_LEFT || reason === PartReason.CONNECTION_PROBLEMS) {
+      super('lobby', 'part', player.username, reason.valueOf());
     } else {
       if (typeof gameName !== 'string' || gameName.length === 0) {
         throw new Error(`Invalid game name ${gameName}`);
       }
 
-      super('lobby', 'part', player.username, partReason.valueOf(), gameName);
+      super('lobby', 'part', player.username, reason.valueOf(), gameName);
     }
   }
 }
