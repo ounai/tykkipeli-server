@@ -12,7 +12,7 @@ class PartReason {
   #code;
 
   static get (code) {
-    return partReasons[code] || null;
+    return partReasons[code] ?? null;
   }
 
   constructor (name, code) {
