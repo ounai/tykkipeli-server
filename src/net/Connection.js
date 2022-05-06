@@ -42,11 +42,7 @@ class Connection {
       .join(', ');
 
     if (!noLogPacketStrings.in.includes(packetString)) {
-      log.debug(
-        chalk.bold('In:'),
-        packetString,
-        noLogPacketStrings.in[0]
-      );
+      log.debug(chalk.bold('In:'), packetString);
     }
 
     try {
