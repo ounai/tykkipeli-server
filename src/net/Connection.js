@@ -31,6 +31,31 @@ class Connection {
   #id = null;
   #playerId = null;
 
+  // Returns true if sequence number is as expected, false if packet should be skipped
+  #verifySequenceNumber (sequenceNumber) {
+    if (this.#lastPacketReceived !== null) {
+      if (sequenceNumber <= this.#lastPacketReceived) {
+        // Packet sequence number too low, duplicate packet
+        log.debug('Skipping duplicate packet!');
+
+        return false;
+      }
+
+      if (sequenceNumber > this.#lastPacketReceived + 1) {
+        // Packet sequence number too high, at least one packet has been missed
+        // There's no logic on the client side to recover from this, so we're just going to disconnect by throwing
+
+        const missedCount = sequenceNumber + this.#lastPacketReceived + 1;
+
+        throw new Error(`Connection ${this.#id} missed ${missedCount} packet(s)`);
+      }
+    }
+
+    this.#lastPacketReceived = sequenceNumber;
+
+    return true;
+  }
+
   async #socketOnData (buffer) {
     const packetString = buffer.toString()
       .replace(/\r/g, chalk.blue('\\r'))
@@ -52,11 +77,9 @@ class Connection {
         const packet = new Packet(packetString);
 
         if (packet.type === PacketType.DATA) {
-          if (this.#lastPacketReceived !== null && packet.sequenceNumber <= this.#lastPacketReceived) {
-            return log.debug('Skipping duplicate packet!');
+          if (!this.#verifySequenceNumber(packet.sequenceNumber)) {
+            return;
           }
-
-          this.#lastPacketReceived = packet.sequenceNumber;
         }
 
         if (typeof this.#onPacketListener === 'function') {
