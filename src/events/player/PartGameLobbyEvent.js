@@ -2,17 +2,21 @@
 
 const chalk = require('chalk');
 
-const Event = require('../Event');
-const Player = require('../../db/models/Player');
-const GamePlayer = require('../../db/models/GamePlayer');
-const JoinLobbyEvent = require('./JoinLobbyEvent');
 const Connection = require('../../net/Connection');
-const DeleteGameEvent = require('../game/DeleteGameEvent');
 const PartReason = require('../../lobby/PartReason');
 const Broadcast = require('../../net/Broadcast');
+
+const Player = require('../../db/models/Player');
+const GamePlayer = require('../../db/models/GamePlayer');
+
 const PartPacket = require('../../net/packets/out/game/PartPacket');
 const PlayersPacket = require('../../net/packets/out/game/PlayersPacket');
 const GameInfoPacket = require('../../net/packets/out/game/GameInfoPacket');
+
+const Event = require('../Event');
+const JoinLobbyEvent = require('./JoinLobbyEvent');
+const DeleteGameEvent = require('../game/DeleteGameEvent');
+const PlayerCountChangeEvent = require('../gameLobby/PlayerCountChangeEvent');
 
 const log = require('../../Logger')('PartGameLobbyEvent');
 
@@ -91,6 +95,7 @@ class PartGameLobbyEvent extends Event {
     }
 
     new JoinLobbyEvent(server, connection, player).fire();
+    new PlayerCountChangeEvent(game).fire();
   }
 }
 

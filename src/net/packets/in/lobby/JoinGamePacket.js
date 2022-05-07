@@ -6,6 +6,8 @@ const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Broadcast = require('../../../Broadcast');
 const PartReason = require('../../../../lobby/PartReason');
+const PlayerCountChangeEvent = require('../../../../events/gameLobby/PlayerCountChangeEvent');
+const JoinErrorType = require('../../../../lobby/JoinErrorType');
 
 const PartPacket = require('../../out/lobby/PartPacket');
 const StatusPacket = require('../../out/StatusPacket');
@@ -27,6 +29,29 @@ class JoinGamePacket extends InPacket {
     return packet.startsWith('lobby', 'join');
   }
 
+  // Returns true if everything ok, false if incorrect password was given
+  #validatePassword (connection, player, game, packet) {
+    if (game.password === null) {
+      // No password needed
+      return true;
+    }
+
+    const password = packet.getString(3);
+
+    if (game.password === password) {
+      log.debug('Player', chalk.magenta(player.toString()), 'gave correct password!');
+
+      return true;
+    } else {
+      log.debug('Player', chalk.magenta(player.toString()), `gave wrong password "${password}"`);
+
+      // Back to the lobby you go
+      new StatusPacket('lobby', JoinErrorType.INCORRECT_PASSWORD.valueOf()).write(connection);
+
+      return false;
+    }
+  }
+
   async handle (connection, packet) {
     const player = await connection.getPlayer();
     const gameId = packet.getNumber(2);
@@ -37,9 +62,12 @@ class JoinGamePacket extends InPacket {
 
     if (!game) throw new Error(`Invalid game id ${gameId}`);
 
+    if (!this.#validatePassword(connection, player, game, packet)) {
+      return;
+    }
+
     const otherGamePlayers = await game.getPlayers();
 
-    // TODO validate password
     // TODO handle these more gracefully
     if (game.hasStarted) throw new Error('Cannot join, game has already started!');
     if (otherGamePlayers.length >= game.maxPlayers) throw new Error('Cannot join, game full!');
@@ -61,6 +89,8 @@ class JoinGamePacket extends InPacket {
 
     new Broadcast(playersInLobby, new PartPacket(player, PartReason.JOINED_GAME, game.name), this.server).writeAll();
     new Broadcast(otherGamePlayers, new JoinPacket(player), this.server).writeAll();
+
+    new PlayerCountChangeEvent(game).fire();
   }
 }
 
