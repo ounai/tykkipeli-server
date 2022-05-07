@@ -16,7 +16,7 @@ class PartLobbyEvent extends Event {
     if (!server) throw new Error(`Invalid server ${server}`);
     if (!(reason instanceof PartReason)) throw new Error(`Invalid part reason ${reason}`);
 
-    log.debug(chalk.magenta(player.toString()), 'parting lobby:', chalk.magenta(reason.toString()));
+    log.debug('Player', player.toColorString(), 'is parting lobby:', chalk.magenta(reason.toString()));
 
     const otherPlayers = await player.findOthersByGameState('LOBBY');
     const partPacket = new PartPacket(player, reason);

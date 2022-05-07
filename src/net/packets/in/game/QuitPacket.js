@@ -1,7 +1,5 @@
 'use strict';
 
-const chalk = require('chalk');
-
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Game = require('../../../../db/models/Game');
@@ -24,7 +22,7 @@ class QuitPacket extends InPacket {
       throw new Error(`Invalid game ${game}`);
     }
 
-    log.debug('Player', chalk.magenta(player.toString()), 'is leaving game', chalk.magenta(game.toString()));
+    log.debug('Player', player.toColorString(), 'is leaving game', game.toColorString());
 
     new PartGameLobbyEvent(this.server, connection, player).fire();
   }

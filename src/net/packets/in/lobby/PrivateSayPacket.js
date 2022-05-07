@@ -30,13 +30,13 @@ class PrivateSayPacket extends InPacket {
       return;
     }
 
-    const fromStr = chalk.magenta(sourcePlayer.toString());
-    const toStr = chalk.magenta(targetPlayer.toString());
+    const fromColorString = sourcePlayer.toColorString();
+    const toColorString = targetPlayer.toColorString();
 
-    log.debug(fromStr, '->', toStr, '(private):', chalk.cyan(message));
+    log.debug(fromColorString, '->', toColorString, '(private):', chalk.cyan(message));
 
     if (!targetPlayer.isConnected) {
-      log.error('Not sending private message to', toStr, '- player is not connected');
+      log.error('Not sending private message to', toColorString, '- player is not connected');
 
       return;
     }
@@ -44,7 +44,7 @@ class PrivateSayPacket extends InPacket {
     const targetConnection = this.server.connectionHandler.getPlayerConnection(targetPlayer);
 
     if (!targetConnection) {
-      log.error('Not sending private message to', toStr, '- invalid connection', targetConnection);
+      log.error('Not sending private message to', toColorString, '- invalid connection', targetConnection);
 
       return;
     }

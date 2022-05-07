@@ -1,7 +1,5 @@
 'use strict';
 
-const chalk = require('chalk');
-
 const Event = require('../Event');
 const Broadcast = require('../../net/Broadcast');
 const GameListRemovePacket = require('../../net/packets/out/lobby/GameListRemovePacket');
@@ -11,7 +9,7 @@ const log = require('../../Logger')('DeleteGameEvent');
 
 class DeleteGameEvent extends Event {
   async handle (server, game) {
-    log.debug('Deleting game', chalk.magenta(game.toString()));
+    log.debug('Deleting game', game.toColorString());
 
     const playersInLobby = await Player.findByGameState('LOBBY');
     const removeGamePacket = new GameListRemovePacket(game);
@@ -20,7 +18,7 @@ class DeleteGameEvent extends Event {
 
     await game.destroy();
 
-    log.debug(`Game ${chalk.magenta(game.toString())} deleted`);
+    log.debug('Game', game.toColorString(), 'deleted');
   }
 }
 

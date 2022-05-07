@@ -1,6 +1,7 @@
 'use strict';
 
 const { Model, DataTypes } = require('sequelize');
+const chalk = require('chalk');
 
 const Player = require('./Player');
 
@@ -147,6 +148,10 @@ class Game extends Model {
 
   toString () {
     return `${this.name} (id=${this.id})`;
+  }
+
+  toColorString () {
+    return chalk.magenta(this.toString());
   }
 }
 

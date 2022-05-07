@@ -1,7 +1,5 @@
 'use strict';
 
-const chalk = require('chalk');
-
 const Connection = require('../../net/Connection');
 const PartReason = require('../../lobby/PartReason');
 const Broadcast = require('../../net/Broadcast');
@@ -22,11 +20,7 @@ const log = require('../../Logger')('PartGameLobbyEvent');
 
 class PartGameLobbyEvent extends Event {
   async #lastPlayerDeleteGame (server, player, game) {
-    log.debug(
-      chalk.magenta(player.toString()),
-      'is the last player, deleting game',
-      chalk.magenta(game.toString())
-    );
+    log.debug(player.toColorString(), 'is the last player, deleting game', game.toColorString());
 
     new DeleteGameEvent(server, game).fire();
   }
@@ -59,7 +53,7 @@ class PartGameLobbyEvent extends Event {
 
     if (!game) throw new Error('Player\'s game not found');
 
-    log.debug('Player leaving game lobby', chalk.magenta(game.toString()));
+    log.debug('Player leaving game lobby', game.toColorString());
 
     const gamePlayer = await player.getGamePlayer();
     await gamePlayer.destroy();
@@ -70,7 +64,7 @@ class PartGameLobbyEvent extends Event {
     if (playerCount === 0) {
       this.#lastPlayerDeleteGame(server, player, game);
     } else {
-      log.debug('Removing', chalk.magenta(player.toString()), 'from game', chalk.magenta(game.toString()));
+      log.debug('Removing', player.toColorString(), 'from game', game.toColorString());
 
       const gamePlayers = await game.getGamePlayers();
 

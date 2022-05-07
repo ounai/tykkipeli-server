@@ -1,7 +1,5 @@
 'use strict';
 
-const chalk = require('chalk');
-
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Broadcast = require('../../../Broadcast');
@@ -39,11 +37,11 @@ class JoinGamePacket extends InPacket {
     const password = packet.getString(3);
 
     if (game.password === password) {
-      log.debug('Player', chalk.magenta(player.toString()), 'gave correct password!');
+      log.debug('Player', player.toColorString(), 'gave correct password!');
 
       return true;
     } else {
-      log.debug('Player', chalk.magenta(player.toString()), `gave wrong password "${password}"`);
+      log.debug('Player', player.toColorString(), `gave wrong password "${password}"`);
 
       // Back to the lobby you go
       new StatusPacket('lobby', JoinErrorType.INCORRECT_PASSWORD.valueOf()).write(connection);
@@ -56,7 +54,7 @@ class JoinGamePacket extends InPacket {
     const player = await connection.getPlayer();
     const gameId = packet.getNumber(2);
 
-    log.debug('Player', chalk.magenta(player.toString()), 'wants to join game', gameId);
+    log.debug('Player', player.toColorString(), 'wants to join game', gameId);
 
     const game = await Game.findById(gameId);
 

@@ -306,6 +306,10 @@ class Player extends Model {
   toString () {
     return `${this.username} (id=${this.id})`;
   }
+
+  toColorString () {
+    return chalk.magenta(this.toString());
+  }
 }
 
 module.exports = Player;

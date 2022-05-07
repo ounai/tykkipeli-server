@@ -1,7 +1,5 @@
 'use strict';
 
-const chalk = require('chalk');
-
 const OutPacket = require('./packets/out/OutPacket');
 const Player = require('../db/models/Player');
 const GamePlayer = require('../db/models/GamePlayer');
@@ -28,19 +26,19 @@ class Broadcast {
     await player.reload();
 
     if (player.isConnected) {
-      log.debug('Sending', this.#packet.constructor.name, 'to', chalk.magenta(player.toString()));
+      log.debug('Sending', this.#packet.constructor.name, 'to', player.toColorString());
 
       try {
         const playerConnection = this.#server.connectionHandler.getPlayerConnection(player);
 
         this.#packet.write(playerConnection);
       } catch (err) {
-        log.error(`Could not write broadcast to player ${chalk.magenta(player.toString())}:\n`, err);
+        log.error(`Could not write broadcast to player ${player.toColorString()}:\n`, err);
       }
     } else {
       const packetName = this.#packet.constructor.name;
 
-      log.debug('Not sending', packetName, 'to', chalk.magenta(player.toString()), '(player not connected)');
+      log.debug('Not sending', packetName, 'to', player.toColorString(), '(player not connected)');
     }
   }
 
