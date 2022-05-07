@@ -50,7 +50,7 @@ class OutPacket {
     } else if (this.#packet.type === PacketType.NONE) {
       throw new Error('Cannot write packet of type NONE');
     } else if (this.#packet.type === PacketType.DATA) {
-      this.#packet.sequenceNumber = connection.nextSequenceNumber;
+      this.#packet.sequenceNumber = connection.getNextSequenceNumber();
     }
 
     await connection.write(this.#packet.toString() + '\n');

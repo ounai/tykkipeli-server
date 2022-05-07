@@ -139,7 +139,7 @@ class Connection {
     return this.#id;
   }
 
-  get nextSequenceNumber () {
+  getNextSequenceNumber () {
     if (this.#lastPacketSent === null) this.#lastPacketSent = 0;
     else this.#lastPacketSent++;
 
