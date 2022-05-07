@@ -19,7 +19,10 @@ class ReadyToStartPacket extends InPacket {
 
     log.debug('Player', chalk.magenta(player.toString()), 'is ready to start');
 
-    // TODO
+    // TODO Mark model as ready to start
+    // TODO Broadcast ready to start
+
+    // TODO If everyone ready to start, then it's time to start!
   }
 }
 
