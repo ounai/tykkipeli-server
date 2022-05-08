@@ -4,6 +4,7 @@ const { Model, DataTypes } = require('sequelize');
 const chalk = require('chalk');
 
 const Player = require('./Player');
+const GamePlayer = require('./GamePlayer');
 
 const columns = {
   name: {
@@ -64,6 +65,31 @@ class Game extends Model {
 
   get isPasswordRequired () {
     return this.password !== null;
+  }
+
+  async isReadyToStart () {
+    if (this.hasStarted) {
+      return false;
+    }
+
+    const gamePlayers = await GamePlayer.findAll({
+      where: {
+        GameId: this.id
+      }
+    });
+
+    // Game cannot start with less than two players
+    if (gamePlayers.length < 2) {
+      return false;
+    }
+
+    for (const gamePlayer of gamePlayers) {
+      if (!gamePlayer.isReadyToStart) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   async getPlayerCount () {
