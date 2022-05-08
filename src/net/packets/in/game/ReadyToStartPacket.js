@@ -4,6 +4,8 @@ const chalk = require('chalk');
 
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
+const Broadcast = require('../../../Broadcast');
+const ReadyToStartOutPacket = require('../../out/game/ReadyToStartPacket');
 
 const log = require('../../../../Logger')('ReadyToStartPacket');
 
@@ -23,7 +25,12 @@ class ReadyToStartPacket extends InPacket {
     gamePlayer.readyToStart = true;
     await gamePlayer.save();
 
-    // TODO Broadcast ready to start status
+    const game = await player.getGame();
+    const otherGamePlayers = await game.getPlayers();
+
+    // Broadcast ready to start status
+    new Broadcast(otherGamePlayers, new ReadyToStartOutPacket(gamePlayer), this.server).writeAll();
+
     // TODO If everyone ready to start, then it's time to start!
   }
 }
