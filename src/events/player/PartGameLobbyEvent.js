@@ -23,7 +23,7 @@ class PartGameLobbyEvent extends Event {
   async #lastPlayerDeleteGame (server, player, game) {
     log.debug(player.toColorString(), 'is the last player, deleting game', game.toColorString());
 
-    new DeleteGameEvent(server, game).fire();
+    await new DeleteGameEvent(server, game, player).fire();
   }
 
   async #reorderPlayerIds (gamePlayers) {
@@ -63,7 +63,7 @@ class PartGameLobbyEvent extends Event {
     const playerCount = await game.getPlayerCount();
 
     if (playerCount === 0) {
-      this.#lastPlayerDeleteGame(server, player, game);
+      await this.#lastPlayerDeleteGame(server, player, game);
     } else {
       log.debug('Removing', player.toColorString(), 'from game', game.toColorString());
 
@@ -85,11 +85,12 @@ class PartGameLobbyEvent extends Event {
       //      There must be some way of sending only the new player count
       await new Broadcast(gamePlayers, gameInfoPacket, server).writeAll();
       new Broadcast(gamePlayers, updatedPlayersPacket, server).writeAll();
+
+      new PlayerCountChangeEvent(game).fire();
+      new GameListUpdatedEvent(player, server).fire();
     }
 
     new JoinLobbyEvent(server, connection, player, true).fire();
-    new PlayerCountChangeEvent(game).fire();
-    new GameListUpdatedEvent(player, server).fire();
   }
 }
 

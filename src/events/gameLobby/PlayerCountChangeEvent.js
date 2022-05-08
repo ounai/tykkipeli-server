@@ -13,7 +13,7 @@ class PlayerCountChangeEvent extends Event {
     }
 
     const [readyToStartsUpdated] = await GamePlayer.update({
-      readyToStart: false
+      isReadyToStart: false
     }, {
       where: {
         GameId: game.id

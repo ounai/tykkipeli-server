@@ -6,6 +6,7 @@ const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Broadcast = require('../../../Broadcast');
 const ReadyToStartOutPacket = require('../../out/game/ReadyToStartPacket');
+const StartGameEvent = require('../../../../events/game/StartGameEvent');
 
 const log = require('../../../../Logger')('ReadyToStartPacket');
 
@@ -22,7 +23,7 @@ class ReadyToStartPacket extends InPacket {
     log.debug('Player', chalk.magenta(player.toString()), 'is ready to start');
 
     const gamePlayer = await player.getGamePlayer();
-    gamePlayer.readyToStart = true;
+    gamePlayer.isReadyToStart = true;
     await gamePlayer.save();
 
     const game = await player.getGame();
@@ -31,7 +32,13 @@ class ReadyToStartPacket extends InPacket {
     new Broadcast(otherGamePlayers, new ReadyToStartOutPacket(gamePlayer), this.server).writeAll();
 
     // TODO If everyone ready to start, then it's time to start!
-    // if (await Game.readyToStart()) { ... }
+    if (await game.isReadyToStart()) {
+      log.debug('Game', game.toColorString(), 'is ready to start!');
+
+      new StartGameEvent(this.server, game).fire();
+    } else {
+      log.debug('Game', game.toColorString(), 'is not yet ready to start');
+    }
   }
 }
 

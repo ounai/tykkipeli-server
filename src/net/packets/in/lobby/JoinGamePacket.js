@@ -7,6 +7,7 @@ const PartReason = require('../../../../lobby/PartReason');
 const JoinErrorType = require('../../../../lobby/JoinErrorType');
 
 const GameListUpdatedEvent = require('../../../../events/lobby/GameListUpdatedEvent');
+const StartGameEvent = require('../../../../events/game/StartGameEvent');
 
 const PartPacket = require('../../out/lobby/PartPacket');
 const StatusPacket = require('../../out/StatusPacket');
@@ -97,7 +98,7 @@ class JoinGamePacket extends InPacket {
     // Send ready to start packets
     for (const otherPlayer of otherGamePlayers) {
       otherPlayer.getGamePlayer().then(otherGamePlayer => (
-        otherGamePlayer.readyToStart && new ReadyToStartPacket(otherGamePlayer).write(connection)
+        otherGamePlayer.isReadyToStart && new ReadyToStartPacket(otherGamePlayer).write(connection)
       ));
     }
 
@@ -106,7 +107,15 @@ class JoinGamePacket extends InPacket {
     new Broadcast(playersInLobby, new PartPacket(player, PartReason.JOINED_GAME, game.name), this.server).writeAll();
     new Broadcast(otherGamePlayers, new JoinPacket(player), this.server).writeAll();
 
-    new GameListUpdatedEvent(player, this.server).fire();
+    if (game.maxPlayers === await game.getPlayerCount()) {
+      log.debug('Game', game.toColorString(), 'is at max players, time to start it!');
+
+      new StartGameEvent(this.server, game).fire();
+
+      // TODO remove listing from lobby
+    } else {
+      new GameListUpdatedEvent(player, this.server).fire();
+    }
   }
 }
 

@@ -18,7 +18,7 @@ const columns = {
     allowNull: false,
     primaryKey: true
   },
-  readyToStart: {
+  isReadyToStart: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false
