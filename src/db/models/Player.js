@@ -115,13 +115,15 @@ class Player extends Model {
   }
 
   static async destroyOldDisconnectedPlayers (tresholdDate = null) {
+    log.debug('Destroying old disconnected player models...');
+
     if (tresholdDate === null) {
       // Default to one hour ago
       tresholdDate = new Date();
       tresholdDate.setHours(tresholdDate.getGetHours() - 1);
     }
 
-    return await this.destroy({
+    await this.destroy({
       where: {
         isConnected: false,
         disconnectedAt: {
@@ -167,12 +169,10 @@ class Player extends Model {
       s: this.accessLevel >= 1 // sheriff
     };
 
-    return (
-      Object.entries(flags)
-        .filter(([flag, enabled]) => typeof flag === 'string' && flag.length === 1 && enabled)
-        .map(([flag]) => flag)
-        .join('')
-    );
+    return Object.entries(flags)
+      .filter(([flag, enabled]) => typeof flag === 'string' && flag.length === 1 && enabled)
+      .map(([flag]) => flag)
+      .join('');
   }
 
   getLobbyInfoString (version = 3) {
@@ -277,8 +277,12 @@ class Player extends Model {
   async requestUsername (username) {
     log.debug('Player', this.id, 'requests username', chalk.cyan(username));
 
-    if (await Player.isUsernameInUse(username)) {
-      log.debug(`Username not set, "${chalk.cyan(username)}" already in use!`);
+    if (username.length < 3) {
+      log.debug(`Username not set, "${chalk.cyan(username)}" too short`);
+    } else if (username.length > 16) {
+      log.debug(`Username not set, "${chalk.cyan(username)}" too long`);
+    } if (await Player.isUsernameInUse(username)) {
+      log.debug(`Username not set, "${chalk.cyan(username)}" already in use`);
     } else {
       await this.setUsername(username);
 
@@ -299,8 +303,9 @@ class Player extends Model {
   async getGame () {
     const gamePlayer = await this.getGamePlayer();
 
-    if (gamePlayer === null) return null;
-    else return await gamePlayer.getGame();
+    return (gamePlayer === null)
+      ? null
+      : await gamePlayer.getGame();
   }
 
   toString () {

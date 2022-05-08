@@ -133,7 +133,7 @@ class CreateGamePacket extends InPacket {
     await player.setGameState(await GameState.findByName('GAME_LOBBY'));
 
     new StatusPacket('game').write(connection);
-    await (new GameInfoPacket(game).write(connection));
+    await new GameInfoPacket(game).write(connection);
     new OwnInfoPacket(player, gamePlayer).write(connection);
 
     const playersInLobby = await player.findOthersByGameState('LOBBY');
