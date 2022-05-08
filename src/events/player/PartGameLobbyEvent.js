@@ -10,6 +10,7 @@ const GamePlayer = require('../../db/models/GamePlayer');
 const PartPacket = require('../../net/packets/out/game/PartPacket');
 const PlayersPacket = require('../../net/packets/out/game/PlayersPacket');
 const GameInfoPacket = require('../../net/packets/out/game/GameInfoPacket');
+const OwnInfoPacket = require('../../net/packets/out/game/OwnInfoPacket');
 
 const Event = require('../Event');
 const JoinLobbyEvent = require('./JoinLobbyEvent');
@@ -26,7 +27,7 @@ class PartGameLobbyEvent extends Event {
     await new DeleteGameEvent(server, game, player).fire();
   }
 
-  async #reorderPlayerIds (gamePlayers) {
+  async #reorderPlayerIds (gamePlayers, server) {
     for (let i = 0; i < gamePlayers.length; i++) {
       if (i !== gamePlayers[i].id) {
         log.debug('Reordering players, set id', gamePlayers[i].id, '->', i);
@@ -40,6 +41,12 @@ class PartGameLobbyEvent extends Event {
             id: gamePlayers[i].id
           }
         });
+
+        const updatedGamePlayer = await GamePlayer.findByPk(i);
+        const player = await updatedGamePlayer.getPlayer();
+        const connection = server.connectionHandler.getPlayerConnection(player);
+
+        await new OwnInfoPacket(player, updatedGamePlayer).write(connection);
       }
     }
   }
@@ -69,7 +76,7 @@ class PartGameLobbyEvent extends Event {
 
       const gamePlayers = await game.getGamePlayers();
 
-      this.#reorderPlayerIds(gamePlayers);
+      await this.#reorderPlayerIds(gamePlayers, server);
 
       const partPacket = new PartPacket(gamePlayer, reason);
       const gameInfoPacket = new GameInfoPacket(game);
@@ -83,8 +90,8 @@ class PartGameLobbyEvent extends Event {
       // TODO I don't think this is correctly implemented
       //      Currently it sends and prints out full game info every time someone leaves
       //      There must be some way of sending only the new player count
-      await new Broadcast(gamePlayers, gameInfoPacket, server).writeAll();
-      new Broadcast(gamePlayers, updatedPlayersPacket, server).writeAll();
+      await new Broadcast(gamePlayers, gameInfoPacket, server).writeAll(); // Game info
+      await new Broadcast(gamePlayers, updatedPlayersPacket, server).writeAll();
 
       new PlayerCountChangeEvent(game).fire();
       new GameListUpdatedEvent(server, player).fire();
