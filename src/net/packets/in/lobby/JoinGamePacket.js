@@ -29,6 +29,14 @@ class JoinGamePacket extends InPacket {
     return packet.startsWith('lobby', 'join');
   }
 
+  #writeJoinError (connection, joinErrorType) {
+    if (!(joinErrorType instanceof JoinErrorType)) {
+      throw new Error(`Invalid join error type ${joinErrorType}`);
+    }
+
+    new StatusPacket('lobby', joinErrorType.valueOf()).write(connection);
+  }
+
   // Returns true if everything ok, false if incorrect password was given
   #validatePassword (connection, player, game, packet) {
     if (game.password === null) {
@@ -45,8 +53,7 @@ class JoinGamePacket extends InPacket {
     } else {
       log.debug('Player', player.toColorString(), `gave wrong password "${password}"`);
 
-      // Back to the lobby you go
-      new StatusPacket('lobby', JoinErrorType.INCORRECT_PASSWORD.valueOf()).write(connection);
+      this.#writeJoinError(connection, JoinErrorType.INCORRECT_PASSWORD);
 
       return false;
     }
@@ -68,9 +75,11 @@ class JoinGamePacket extends InPacket {
 
     const otherGamePlayers = await game.getPlayers();
 
-    // TODO handle these more gracefully
-    if (game.hasStarted) throw new Error('Cannot join, game has already started!');
-    if (otherGamePlayers.length >= game.maxPlayers) throw new Error('Cannot join, game full!');
+    if (game.hasStarted || otherGamePlayers.length >= game.maxPlayers) {
+      log.debug('Too late for player', player.toColorString(), 'to join, the game has already started');
+
+      return this.#writeJoinError(connection, JoinErrorType.GAME_STARTED);
+    }
 
     const gamePlayer = await GamePlayer.create({
       id: otherGamePlayers.length,
