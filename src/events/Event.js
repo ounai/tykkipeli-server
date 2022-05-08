@@ -9,13 +9,13 @@ class Event {
     this.#args = args;
   }
 
-  fire () {
+  async fire () {
     log.debug('Firing event:', this.constructor.name);
 
-    this.handle(...this.#args);
+    await this.handle(...this.#args);
   }
 
-  handle () {}
+  async handle () {}
 }
 
 module.exports = Event;
