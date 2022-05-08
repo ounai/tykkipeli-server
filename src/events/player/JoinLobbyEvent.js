@@ -11,6 +11,7 @@ const Connection = require('../../net/Connection');
 const GameListFullPacket = require('../../net/packets/out/lobby/GameListFullPacket');
 const UsersPacket = require('../../net/packets/out/lobby/UsersPacket');
 const JoinPacket = require('../../net/packets/out/lobby/JoinPacket');
+const JoinFromGamePacket = require('../../net/packets/out/lobby/JoinFromGamePacket');
 const StatusPacket = require('../../net/packets/out/StatusPacket');
 const OwnJoinPacket = require('../../net/packets/out/lobby/OwnJoinPacket');
 const NumberOfUsersPacket = require('../../net/packets/out/lobby/NumberOfUsersPacket');
@@ -19,7 +20,7 @@ const ServerSayPacket = require('../../net/packets/out/lobby/ServerSayPacket');
 const log = require('../../Logger')('JoinLobbyEvent');
 
 class JoinLobbyEvent extends Event {
-  async handle (server, connection, player) {
+  async handle (server, connection, player, joinFromGame = false) {
     if (!server) throw new Error(`Invalid server ${server}`);
     if (!(connection instanceof Connection)) throw new Error(`Invalid connection ${connection}`);
     if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
@@ -45,7 +46,11 @@ class JoinLobbyEvent extends Event {
     new GameListFullPacket().write(connection);
     new UsersPacket(player, otherPlayersInLobby).write(connection);
 
-    new Broadcast(otherPlayersInLobby, new JoinPacket(player), server).writeAll();
+    new Broadcast(
+      otherPlayersInLobby,
+      (joinFromGame ? new JoinFromGamePacket(player) : new JoinPacket(player)),
+      server
+    ).writeAll();
   }
 }
 

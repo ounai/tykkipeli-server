@@ -4,8 +4,10 @@ const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Broadcast = require('../../../Broadcast');
 const PartReason = require('../../../../lobby/PartReason');
-const PlayerCountChangeEvent = require('../../../../events/gameLobby/PlayerCountChangeEvent');
 const JoinErrorType = require('../../../../lobby/JoinErrorType');
+
+const PlayerCountChangeEvent = require('../../../../events/gameLobby/PlayerCountChangeEvent');
+const GameListUpdatedEvent = require('../../../../events/lobby/GameListUpdatedEvent');
 
 const PartPacket = require('../../out/lobby/PartPacket');
 const StatusPacket = require('../../out/StatusPacket');
@@ -89,6 +91,7 @@ class JoinGamePacket extends InPacket {
     new Broadcast(otherGamePlayers, new JoinPacket(player), this.server).writeAll();
 
     new PlayerCountChangeEvent(game).fire();
+    new GameListUpdatedEvent(player, this.server).fire();
   }
 }
 

@@ -15,6 +15,7 @@ const Event = require('../Event');
 const JoinLobbyEvent = require('./JoinLobbyEvent');
 const DeleteGameEvent = require('../game/DeleteGameEvent');
 const PlayerCountChangeEvent = require('../gameLobby/PlayerCountChangeEvent');
+const GameListUpdatedEvent = require('../lobby/GameListUpdatedEvent');
 
 const log = require('../../Logger')('PartGameLobbyEvent');
 
@@ -84,12 +85,11 @@ class PartGameLobbyEvent extends Event {
       //      There must be some way of sending only the new player count
       await new Broadcast(gamePlayers, gameInfoPacket, server).writeAll();
       new Broadcast(gamePlayers, updatedPlayersPacket, server).writeAll();
-
-      // TODO update lobby game listing
     }
 
-    new JoinLobbyEvent(server, connection, player).fire();
+    new JoinLobbyEvent(server, connection, player, true).fire();
     new PlayerCountChangeEvent(game).fire();
+    new GameListUpdatedEvent(player, server).fire();
   }
 }
 
