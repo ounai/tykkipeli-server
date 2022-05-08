@@ -18,7 +18,7 @@ class OutPacket {
   #packet;
 
   #busy = false;
-  #busyCallback = null;
+  #busyCallbacks = [];
 
   constructor (...args) {
     this.#packet = new Packet();
@@ -29,9 +29,17 @@ class OutPacket {
   async #asyncArgs (argsFunction) {
     this.#packet.args = await argsFunction();
 
-    if (typeof this.#busyCallback === 'function') {
-      this.#busyCallback();
-      this.#busyCallback = null;
+    if (this.#busyCallbacks.length > 0) {
+      const busyCallbacks = this.#busyCallbacks;
+      this.#busyCallbacks = [];
+
+      for (const busyCallback of busyCallbacks) {
+        if (typeof busyCallback !== 'function') {
+          throw new Error(`Invalid busy callback ${busyCallback} for packet of type ${this.constructor.name}`);
+        }
+
+        busyCallback();
+      }
     }
 
     this.#busy = false;
@@ -81,7 +89,7 @@ class OutPacket {
         resolve();
       };
 
-      if (this.#busy) this.#busyCallback = writeAndResolve;
+      if (this.#busy) this.#busyCallbacks.push(writeAndResolve);
       else writeAndResolve();
     });
   }
