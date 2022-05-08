@@ -2,6 +2,7 @@
 
 const Event = require('../Event');
 const Game = require('../../db/models/Game');
+const GameListUpdatedEvent = require('../lobby/GameListUpdatedEvent');
 
 const log = require('../../Logger')('StartGameEvent');
 
@@ -13,6 +14,8 @@ class StartGameEvent extends Event {
 
     game.hasStarted = true;
     await game.save();
+
+    await new GameListUpdatedEvent(server).fire();
 
     // TODO a lot of things
   }

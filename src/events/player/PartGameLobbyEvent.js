@@ -87,7 +87,7 @@ class PartGameLobbyEvent extends Event {
       new Broadcast(gamePlayers, updatedPlayersPacket, server).writeAll();
 
       new PlayerCountChangeEvent(game).fire();
-      new GameListUpdatedEvent(player, server).fire();
+      new GameListUpdatedEvent(server, player).fire();
     }
 
     new JoinLobbyEvent(server, connection, player, true).fire();

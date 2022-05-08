@@ -110,11 +110,9 @@ class JoinGamePacket extends InPacket {
     if (game.maxPlayers === await game.getPlayerCount()) {
       log.debug('Game', game.toColorString(), 'is at max players, time to start it!');
 
-      new StartGameEvent(this.server, game).fire();
-
-      // TODO remove listing from lobby
+      await new StartGameEvent(this.server, game).fire();
     } else {
-      new GameListUpdatedEvent(player, this.server).fire();
+      await new GameListUpdatedEvent(this.server, player).fire();
     }
   }
 }
