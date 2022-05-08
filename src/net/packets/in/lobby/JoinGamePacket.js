@@ -6,7 +6,6 @@ const Broadcast = require('../../../Broadcast');
 const PartReason = require('../../../../lobby/PartReason');
 const JoinErrorType = require('../../../../lobby/JoinErrorType');
 
-const PlayerCountChangeEvent = require('../../../../events/gameLobby/PlayerCountChangeEvent');
 const GameListUpdatedEvent = require('../../../../events/lobby/GameListUpdatedEvent');
 
 const PartPacket = require('../../out/lobby/PartPacket');
@@ -15,6 +14,7 @@ const GameInfoPacket = require('../../out/game/GameInfoPacket');
 const OwnInfoPacket = require('../../out/game/OwnInfoPacket');
 const PlayersPacket = require('../../out/game/PlayersPacket');
 const JoinPacket = require('../../out/game/JoinPacket');
+const ReadyToStartPacket = require('../../out/game/ReadyToStartPacket');
 
 const Game = require('../../../../db/models/Game');
 const GamePlayer = require('../../../../db/models/GamePlayer');
@@ -89,17 +89,23 @@ class JoinGamePacket extends InPacket {
 
     await player.setGameState(await GameState.findByName('GAME_LOBBY'));
 
-    new StatusPacket('game').write(connection);
+    await new StatusPacket('game').write(connection);
     await new GameInfoPacket(game).write(connection);
     await new PlayersPacket(otherGamePlayers).write(connection);
     await new OwnInfoPacket(player, gamePlayer).write(connection);
+
+    // Send ready to start packets
+    for (const otherPlayer of otherGamePlayers) {
+      otherPlayer.getGamePlayer().then(otherGamePlayer => (
+        otherGamePlayer.readyToStart && new ReadyToStartPacket(otherGamePlayer).write(connection)
+      ));
+    }
 
     const playersInLobby = await player.findOthersByGameState('LOBBY');
 
     new Broadcast(playersInLobby, new PartPacket(player, PartReason.JOINED_GAME, game.name), this.server).writeAll();
     new Broadcast(otherGamePlayers, new JoinPacket(player), this.server).writeAll();
 
-    new PlayerCountChangeEvent(game).fire();
     new GameListUpdatedEvent(player, this.server).fire();
   }
 }

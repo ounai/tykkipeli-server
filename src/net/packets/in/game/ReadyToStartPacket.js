@@ -28,10 +28,10 @@ class ReadyToStartPacket extends InPacket {
     const game = await player.getGame();
     const otherGamePlayers = await game.getPlayers();
 
-    // Broadcast ready to start status
     new Broadcast(otherGamePlayers, new ReadyToStartOutPacket(gamePlayer), this.server).writeAll();
 
     // TODO If everyone ready to start, then it's time to start!
+    // if (await Game.readyToStart()) { ... }
   }
 }
 
