@@ -33,7 +33,7 @@ class GameServer {
 
   async #onConnect (connection) {
     if (await this.#connectionCount.isFull()) {
-      log.info('Max number of players reached, not accepting connection');
+      log.info('Max number of players reached, not accepting connection', connection.id);
 
       return new ServerFullPacket().write(connection);
     }

@@ -51,7 +51,7 @@ class FileServer {
     // Setup express middleware for static files
     this.#app.use(express.static(this.#servePath));
 
-    // Index path
+    // Index path /
     this.#app.get('/', this.#indexRoute.bind(this));
 
     return this;

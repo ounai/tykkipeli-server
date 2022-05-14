@@ -60,21 +60,25 @@ class JoinGamePacket extends InPacket {
     }
   }
 
-  async handle (connection, packet) {
-    const player = await connection.getPlayer();
+  async #getGame (packet) {
     const gameId = packet.getNumber(2);
-
-    log.debug('Player', player.toColorString(), 'wants to join game', gameId);
-
     const game = await Game.findById(gameId);
 
     if (!game) throw new Error(`Invalid game id ${gameId}`);
 
+    return game;
+  }
+
+  async handle (connection, packet) {
+    const player = await connection.getPlayer();
+    const game = await this.#getGame(packet);
+    const otherGamePlayers = await game.getPlayers();
+
+    log.debug('Player', player.toColorString(), 'wants to join game', game.toColorString());
+
     if (!this.#validatePassword(connection, player, game, packet)) {
       return;
     }
-
-    const otherGamePlayers = await game.getPlayers();
 
     if (game.hasStarted || otherGamePlayers.length >= game.maxPlayers) {
       log.debug('Too late for player', player.toColorString(), 'to join, the game has already started');

@@ -84,7 +84,7 @@ class Packet {
 
     if (typeof packet === 'string') {
       if (packet.length > 0) this.#deserialize(packet);
-    } else if (typeof packet === 'object' && packet.length > 0) {
+    } else if (Array.isArray(packet) && packet.length > 0) {
       this.args = packet;
     } else if (packet !== null && packet !== undefined) {
       throw new Error(`Invalid packet ${packet}`);
@@ -137,7 +137,7 @@ class Packet {
   }
 
   getString (pos) {
-    if (typeof this.args !== 'object' || this.args.length < pos) {
+    if (!Array.isArray(this.args) || this.args.length < pos) {
       throw new Error(`Cannot get arg ${pos}`);
     }
 
@@ -148,7 +148,7 @@ class Packet {
     const n = Number(this.getString(pos));
 
     if (typeof n !== 'number' || isNaN(n)) {
-      throw new Error(`Invalid number at ${pos}`);
+      throw new Error(`Invalid number at ${pos}: ${n}`);
     }
 
     return n;

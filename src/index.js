@@ -7,10 +7,10 @@ const config = require('./config');
 const log = require('./Logger')('index');
 
 const init = async () => {
+  log.info('Initializing...');
+
   new FileServer().init(config).listen();
   (await new GameServer().init(config)).listen();
 };
-
-log.info('Initializing...');
 
 init();

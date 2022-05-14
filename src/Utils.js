@@ -13,6 +13,7 @@ class Utils {
   }
 
   static currentTimeString () {
+    // MM/DD/YYYY, HH:MM:SS
     const dateTimeFormat = new Intl.DateTimeFormat('en', {
       year: 'numeric',
       day: '2-digit',
@@ -31,19 +32,19 @@ class Utils {
       (/^([0-9]{1,3}\.){3}[0-9]{1,3}$/.test(str) || str === 'localhost');
   }
 
+  static validateIP (ip) {
+    if (!this.isIP(ip)) {
+      throw new Error(`Invalid ip ${ip}`);
+    }
+  }
+
   static isPort (n) {
     return typeof n === 'number' &&
       !isNaN(n) && n > 0 && n <= 65535;
   }
 
-  static validateIP (ip) {
-    if (!Utils.isIP(ip)) {
-      throw new Error(`Invalid ip ${ip}`);
-    }
-  }
-
   static validatePort (port) {
-    if (!Utils.isPort(port)) {
+    if (!this.isPort(port)) {
       throw new Error(`Invalid port ${port}`);
     }
   }

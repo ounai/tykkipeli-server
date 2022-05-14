@@ -39,6 +39,7 @@ class OutPacket {
 
     if (this.#busyCallbacks.length > 0) {
       const busyCallbacks = this.#busyCallbacks;
+
       this.#busyCallbacks = [];
 
       for (const busyCallback of busyCallbacks) {
@@ -68,7 +69,7 @@ class OutPacket {
     if (!(this.#packet.type instanceof PacketType)) {
       throw new Error(`Invalid packet type ${this.#packet.type}`);
     } else if (this.#packet.type === PacketType.NONE) {
-      throw new Error('Cannot write packet of type NONE');
+      throw new Error('Cannot write packet of type PacketType.NONE');
     } else if (this.#packet.type === PacketType.DATA) {
       this.#packet.sequenceNumber = connection.getNextSequenceNumber();
     }

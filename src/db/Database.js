@@ -46,6 +46,10 @@ class Database {
       if (model.associated && model.associated.length > 0) modelsCount++;
 
       for (const [association, target, opts = {}] of (model.associated ?? [])) {
+        if (!['hasOne', 'hasMany', 'belongsTo', 'belongsToMany'].includes(association)) {
+          throw new Error(`Invalid association "${association}" in model ${modelName}`);
+        }
+
         log.debug('Creating association:', modelName, association, target);
 
         model[association](this.#models[target], opts);
@@ -71,7 +75,7 @@ class Database {
     // Predefined rows
     for (const [modelName, model] of Object.entries(this.#models)) {
       if (model.rows) {
-        log.debug('Clearing table', modelName);
+        log.debug('Clearing table', modelName, 'to write', model.rows.length, 'predefined rows');
 
         await model.destroy({ truncate: true });
         await this.#writeRows(model, model.rows);
