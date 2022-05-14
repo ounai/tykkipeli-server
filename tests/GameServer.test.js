@@ -1,6 +1,6 @@
 'use strict';
 
-const Server = require('../src/Server');
+const GameServer = require('../src/GameServer');
 
 const PacketHandler = require('../src/net/PacketHandler');
 jest.mock('../src/net/PacketHandler');
@@ -33,13 +33,13 @@ describe('server initialization', () => {
   });
 
   it('fails when invalid or no config is given', async () => {
-    await expect(() => new Server().init())
+    await expect(() => new GameServer().init())
       .rejects.toThrow(Error);
 
-    await expect(() => new Server().init({}))
+    await expect(() => new GameServer().init({}))
       .rejects.toThrow(Error);
 
-    await expect(() => new Server().init({ server: {} }))
+    await expect(() => new GameServer().init({ server: {} }))
       .rejects.toThrow(Error);
   });
 
@@ -55,7 +55,7 @@ describe('server initialization', () => {
     ];
 
     for (const invalidIp of invalidIps) {
-      await expect(() => new Server().init(getConfig({ ip: invalidIp })))
+      await expect(() => new GameServer().init(getConfig({ ip: invalidIp })))
         .rejects.toThrowError(/Invalid ip/);
     }
   });
@@ -71,13 +71,13 @@ describe('server initialization', () => {
     ];
 
     for (const invalidPort of invalidPorts) {
-      await expect(() => new Server().init(getConfig({ port: invalidPort })))
+      await expect(() => new GameServer().init(getConfig({ port: invalidPort })))
         .rejects.toThrowError(/Invalid port/);
     }
   });
 
   it('creates a packet handler', async () => {
-    const server = new Server();
+    const server = new GameServer();
     await server.init(config);
 
     expect(PacketHandler)
@@ -88,7 +88,7 @@ describe('server initialization', () => {
   });
 
   it('creates a connection handler', async () => {
-    const server = new Server();
+    const server = new GameServer();
     await server.init(config);
 
     expect(ConnectionHandler)
@@ -107,7 +107,7 @@ describe('listen', () => {
   });
 
   it('calls connection handler to start listening', async () => {
-    const server = new Server();
+    const server = new GameServer();
     await server.init(config);
     server.listen();
 
@@ -116,7 +116,7 @@ describe('listen', () => {
   });
 
   it('creates a pinger instance', async () => {
-    const server = new Server();
+    const server = new GameServer();
     await server.init(config);
     server.listen();
 
