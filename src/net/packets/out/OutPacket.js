@@ -23,7 +23,15 @@ class OutPacket {
   constructor (...args) {
     this.#packet = new Packet();
     this.#packet.type = PacketType.DATA;
-    this.#packet.args = args;
+
+    if (args.length === 1 && typeof args[0] === 'function') {
+      // Arguments given via async function
+      this.#asyncArgs(args[0]);
+      this.#busy = true;
+    } else {
+      // Args given in constructor
+      this.#packet.args = args;
+    }
   }
 
   async #asyncArgs (argsFunction) {
@@ -50,7 +58,11 @@ class OutPacket {
     const packetTypeStr = this.#packet.type.toString();
 
     if (!noLogPackets.includes(packetName)) {
-      log.debug(`Writing packet ${packetName}:`, chalk.magenta(packetTypeStr), this.#packet.args);
+      log.debug(
+        `Writing packet ${packetName} to connection ${connection.id}:`,
+        chalk.magenta(packetTypeStr),
+        this.#packet.args
+      );
     }
 
     if (!(this.#packet.type instanceof PacketType)) {
@@ -67,12 +79,6 @@ class OutPacket {
   setType (type) {
     if (type instanceof PacketType) this.#packet.type = type;
     else throw new Error(`Invalid packet type ${type}`);
-  }
-
-  asyncArgs (argsFunction) {
-    this.#busy = true;
-
-    this.#asyncArgs(argsFunction);
   }
 
   write (connection) {

@@ -8,7 +8,7 @@ const log = require('./Logger')('index');
 
 const init = async () => {
   new FileServer().init(config).listen();
-  (await (new GameServer().init(config))).listen();
+  (await new GameServer().init(config)).listen();
 };
 
 log.info('Initializing...');

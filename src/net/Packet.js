@@ -4,18 +4,18 @@ const PacketType = require('./PacketType');
 
 class Packet {
   type;
-  args;
 
-  sequenceNumber = null;
+  #args;
+  #sequenceNumber = null;
 
   #serializeDataPacket () {
-    if (typeof this.sequenceNumber !== 'number' || isNaN(this.sequenceNumber)) {
-      throw new Error(`Cannot serialize data packet, invalid sequence number ${this.sequenceNumber}!`);
+    if (typeof this.#sequenceNumber !== 'number' || isNaN(this.#sequenceNumber)) {
+      throw new Error(`Cannot serialize data packet, invalid sequence number ${this.#sequenceNumber}!`);
     }
 
     return [
       PacketType.DATA.valueOf(),
-      this.sequenceNumber,
+      this.#sequenceNumber,
       this.args.join('\t')
     ].join(' ');
   }
@@ -43,7 +43,7 @@ class Packet {
     if (parsedSequenceNumber < 0 || isNaN(parsedSequenceNumber)) {
       throw new Error(`Cannot deserialize data packet ${packet}, invalid sequence number ${parsedSequenceNumber}!`);
     } else {
-      this.sequenceNumber = parsedSequenceNumber;
+      this.#sequenceNumber = parsedSequenceNumber;
     }
 
     this.args = splitPacket.slice(2).join(' ').split('\t');
@@ -54,18 +54,27 @@ class Packet {
   }
 
   #serialize () {
-    if (this.type === PacketType.DATA) return this.#serializeDataPacket();
-    else if (this.type === PacketType.COMMAND) return this.#serializeCommandPacket();
-    else throw new Error(`Cannot serialize packet, invalid type ${this.type}!`);
+    if (this.type === PacketType.DATA) {
+      return this.#serializeDataPacket();
+    } else if (this.type === PacketType.COMMAND) {
+      return this.#serializeCommandPacket();
+    } else {
+      throw new Error(`Cannot serialize packet, invalid type ${this.type}!`);
+    }
   }
 
   #deserialize (packet) {
     this.type = PacketType.get(packet[0]);
 
-    if (this.type === PacketType.DATA) this.#deserializeDataPacket(packet);
-    else if (this.type === PacketType.COMMAND) this.args = packet.split(' ').slice(1);
-    else if (this.type === PacketType.STRING) this.args = packet.split(' ')[1].split('\t');
-    else throw new Error(`Cannot deserialize packet, invalid type ${this.type}!`);
+    if (this.type === PacketType.DATA) {
+      this.#deserializeDataPacket(packet);
+    } else if (this.type === PacketType.COMMAND) {
+      this.args = packet.split(' ').slice(1);
+    } else if (this.type === PacketType.STRING) {
+      this.args = packet.split(' ')[1].split('\t');
+    } else {
+      throw new Error(`Cannot deserialize packet, invalid type ${this.type}!`);
+    }
 
     this.#cleanArgs();
   }
@@ -82,6 +91,24 @@ class Packet {
     }
   }
 
+  get args () {
+    return this.#args;
+  }
+
+  set args (args) {
+    if (!Array.isArray(args)) {
+      throw new Error(`Invalid args, not an array: ${args}`);
+    }
+
+    for (const arg of args) {
+      if (!['string', 'number'].includes(typeof arg)) {
+        throw new Error(`Invalid arg ${arg} (type ${typeof arg}`);
+      }
+    }
+
+    this.#args = args;
+  }
+
   set sequenceNumber (sequenceNumber) {
     if (this.type !== PacketType.DATA) {
       throw new Error(`Cannot set sequence number, unsupported for packets of type ${this.type}!`);
@@ -91,11 +118,11 @@ class Packet {
       throw new Error(`Cannot set sequence number, invalid number ${sequenceNumber}!`);
     }
 
-    this.sequenceNumber = sequenceNumber;
+    this.#sequenceNumber = sequenceNumber;
   }
 
   get sequenceNumber () {
-    return this.sequenceNumber;
+    return this.#sequenceNumber;
   }
 
   toString () {
