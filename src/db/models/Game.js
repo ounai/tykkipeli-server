@@ -5,6 +5,7 @@ const chalk = require('chalk');
 
 const Player = require('./Player');
 const GamePlayer = require('./GamePlayer');
+const Round = require('./Round');
 
 const columns = {
   name: {
@@ -40,7 +41,13 @@ const columns = {
     allowNull: false,
     defaultValue: false
   },
-  currentRoundNumber: DataTypes.INTEGER
+  currentRoundNumber: {
+    type: DataTypes.INTEGER,
+    validate: {
+      min: 1,
+      max: 20
+    }
+  }
 };
 
 const associated = [
@@ -172,6 +179,24 @@ class Game extends Model {
       dudsEnabled,
       scoringModeId
     ];
+  }
+
+  async findRoundByNumber (roundNumber) {
+    return await Round.findOne({
+      where: {
+        GameId: this.id,
+        roundNumber
+      }
+    });
+  }
+
+  async findCurrentRound () {
+    return await Round.findOne({
+      where: {
+        GameId: this.id,
+        roundNumber: this.currentRoundNumber
+      }
+    });
   }
 
   toString () {

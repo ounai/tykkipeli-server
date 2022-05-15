@@ -22,11 +22,21 @@ const columns = {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false
+  },
+  health: {
+    type: DataTypes.TINYINT,
+    allowNull: false,
+    defaultValue: 100,
+    validate: {
+      min: 0,
+      max: 100
+    }
   }
 };
 
 const associated = [
   ['hasMany', 'Ammo'],
+  ['hasMany', 'Action'],
   ['belongsTo', 'Player'],
   ['belongsTo', 'Game']
 ];
@@ -49,6 +59,12 @@ class GamePlayer extends Model {
         }
       }
     });
+  }
+
+  async getAmmoString () {
+    return (await this.getAmmos())
+      .map(({ count }) => count)
+      .join('\t');
   }
 }
 
