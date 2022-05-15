@@ -5,13 +5,11 @@ const { Model, DataTypes } = require('sequelize');
 const columns = {
   GamePlayerId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    primaryKey: true
+    allowNull: false
   },
   RoundId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-    primaryKey: true
+    allowNull: false
   },
   actionId: {
     type: DataTypes.INTEGER,
@@ -20,7 +18,12 @@ const columns = {
   launchScreenX: DataTypes.INTEGER,
   launchScreenY: DataTypes.INTEGER,
   targetScreenX: DataTypes.INTEGER,
-  targetScreenY: DataTypes.INTEGER
+  targetScreenY: DataTypes.INTEGER,
+  executed: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  }
 };
 
 const associated = [

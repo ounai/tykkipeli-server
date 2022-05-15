@@ -12,6 +12,11 @@ class StartTurnEvent extends Event {
     const wind = 0; // TODO wind should be generated according to WindMode
 
     for (const player of await game.getPlayers()) {
+      const gamePlayer = await player.getGamePlayer();
+
+      gamePlayer.turnResultsReceived = false;
+      await gamePlayer.save();
+
       new StartTurnPacket(player, wind).write(server.connectionHandler.getPlayerConnection(player));
     }
   }

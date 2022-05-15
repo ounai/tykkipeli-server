@@ -26,7 +26,19 @@ class ActionPacket extends InPacket {
     log.debug('Created action:', action.toJSON());
   }
 
-  async #action (game, player, gamePlayer, actionId, packet) {
+  async #shieldAction (game, player, gamePlayer) {
+    log.debug('Player', player.toColorString(), 'submitted shield action');
+
+    const action = await Action.create({
+      GamePlayerId: gamePlayer.id,
+      RoundId: (await game.findCurrentRound()).id,
+      actionId: 16 // TODO get from action id enum
+    });
+
+    log.debug('Created action:', action.toJSON());
+  }
+
+  async #targetedAction (game, player, gamePlayer, actionId, packet) {
     // TODO check if player has already submitted an action for this turn
     // TODO check that player's ammo is sufficient, if not do this.#noAction()
     // TODO decrement ammo if action id is not 0
@@ -69,10 +81,16 @@ class ActionPacket extends InPacket {
 
     const actionId = packet.getNumber(2);
 
+    // TODO enum action id's
     if (actionId === -1) {
+      // No action
       await this.#noAction(game, player, gamePlayer);
+    } else if (actionId === 16) {
+      // Shield
+      await this.#shieldAction(game, player, gamePlayer);
     } else {
-      await this.#action(game, player, gamePlayer, actionId, packet);
+      // Projectile or teleport
+      await this.#targetedAction(game, player, gamePlayer, actionId, packet);
     }
 
     new ActionSubmittedEvent(this.server, game).fire();

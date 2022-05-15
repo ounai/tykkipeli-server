@@ -6,13 +6,19 @@ const Event = require('../Event');
 const Broadcast = require('../../net/Broadcast');
 const ActionPacket = require('../../net/packets/out/game/ActionPacket');
 const StartActionPacket = require('../../net/packets/out/game/StartActionPacket');
+const Action = require('../../db/models/Action');
 
 const log = require('../../Logger')('ActionSubmittedEvt');
 
 class ActionSubmittedEvent extends Event {
   async handle (server, game) {
     const round = await game.findCurrentRound();
-    const actions = await round.getActions();
+
+    const actions = await round.getActions({
+      where: {
+        executed: false
+      }
+    });
 
     log.debug(
       `Actions so far for game ${game.toColorString()}:`,
@@ -31,7 +37,8 @@ class ActionSubmittedEvent extends Event {
         const where = {
           GamePlayerId: {
             [Op.not]: (await player.getGamePlayer()).id
-          }
+          },
+          executed: false
         };
 
         // Send every action packet except the player's own
@@ -39,6 +46,15 @@ class ActionSubmittedEvent extends Event {
           new ActionPacket(action).write(connection);
         }
       }
+
+      // Set actions as executed
+      await Action.update({
+        executed: true
+      }, {
+        where: {
+          RoundId: round.id
+        }
+      });
 
       new Broadcast(players, new StartActionPacket(), server).writeAll();
     } else {

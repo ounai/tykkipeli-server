@@ -23,14 +23,10 @@ const columns = {
     allowNull: false,
     defaultValue: false
   },
-  health: {
-    type: DataTypes.TINYINT,
+  turnResultsReceived: {
+    type: DataTypes.BOOLEAN,
     allowNull: false,
-    defaultValue: 100,
-    validate: {
-      min: 0,
-      max: 100
-    }
+    defaultValue: false
   }
 };
 
