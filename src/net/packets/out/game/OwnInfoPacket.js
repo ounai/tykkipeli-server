@@ -16,7 +16,7 @@ class OwnInfoPacket extends OutPacket {
       gamePlayer.id,
       player.username,
       player.clanName ?? '-',
-      '-' // TODO
+      '-' // TODO figure out what this is
     );
   }
 }
