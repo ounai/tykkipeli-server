@@ -31,7 +31,6 @@ class ReadyToStartPacket extends InPacket {
 
     new Broadcast(otherGamePlayers, new ReadyToStartOutPacket(gamePlayer), this.server).writeAll();
 
-    // TODO If everyone ready to start, then it's time to start!
     if (await game.isReadyToStart()) {
       log.debug('Game', game.toColorString(), 'is ready to start!');
 

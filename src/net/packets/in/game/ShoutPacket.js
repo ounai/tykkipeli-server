@@ -23,9 +23,11 @@ class ShoutPacket extends InPacket {
     const gamePlayer = await player.getGamePlayer();
     const otherGamePlayers = await gamePlayer.findOthersInGame();
 
-    const broadcastPacket = new OutShoutPacket(gamePlayer.id, message);
-
-    new Broadcast(otherGamePlayers, broadcastPacket, this.server).writeAll();
+    new Broadcast(
+      otherGamePlayers,
+      new OutShoutPacket(gamePlayer.id, message),
+      this.server
+    ).writeAll();
   }
 }
 
