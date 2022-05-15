@@ -27,11 +27,11 @@ class SayPacket extends InPacket {
       throw new Error(`Invalid game player ${gamePlayer}`);
     }
 
-    const otherGamePlayers = await gamePlayer.findOthersInGame();
-
-    const broadcastPacket = new OutSayPacket(player.username, message);
-
-    new Broadcast(otherGamePlayers, broadcastPacket, this.server).writeAll();
+    new Broadcast(
+      await gamePlayer.findOthersInGame(),
+      new OutSayPacket(player.username, message),
+      this.server
+    ).writeAll();
   }
 }
 
