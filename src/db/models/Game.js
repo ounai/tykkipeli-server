@@ -39,11 +39,13 @@ const columns = {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false
-  }
+  },
+  currentRoundNumber: DataTypes.INTEGER
 };
 
 const associated = [
   ['hasMany', 'GamePlayer'],
+  ['hasMany', 'Round'],
   ['belongsTo', 'WeaponAddingMode'],
   ['belongsTo', 'PlayingOrderMode'],
   ['belongsTo', 'WindMode'],
