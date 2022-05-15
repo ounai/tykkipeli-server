@@ -35,7 +35,9 @@ class ConnectionHandler {
 
       this.#connections[connectionId] = connection;
 
-      this.#onConnectionListener(connection);
+      if (typeof this.#onConnectionListener === 'function') {
+        this.#onConnectionListener(connection);
+      }
     }
   }
 

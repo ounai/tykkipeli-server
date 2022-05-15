@@ -25,10 +25,6 @@ class FileServer {
     Utils.validatePort(this.#port);
   }
 
-  #onListen () {
-    log.info('Serving files from', chalk.magenta(this.#servePath), 'on port', this.#port);
-  }
-
   #indexRoute (req, res) {
     res.end([
       'To Whom It May Concern,',
@@ -40,6 +36,10 @@ class FileServer {
       '\tTykkipeli file server',
       `\tPort ${this.#port}`
     ].join('\n'));
+  }
+
+  #onListen () {
+    log.info('Serving files from', chalk.magenta(this.#servePath), 'on port', this.#port);
   }
 
   init (config) {

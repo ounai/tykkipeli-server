@@ -4,23 +4,23 @@ require('dotenv').config();
 
 const config = {};
 
-const inPacketPaths = [
-  'packets/in',
-  'packets/in/lobby',
-  'packets/in/game'
-];
-
 config.logging = {
   disablePing: true // No logging of ping related stuff
 };
 
 config.server = {
-  ip: process.env.ACANNONS_IP || 'localhost',
-  port: (process.env.ACANNONS_PORT ? Number(process.env.ACANNONS_PORT) : 4242),
+  ip: process.env.ACANNONS_IP ?? 'localhost', // default is localhost, ip should be preferred
+  port: (process.env.ACANNONS_PORT ? Number(process.env.ACANNONS_PORT) : 4242), // default 4242
   maxPlayers: 1000, // comment out for unlimited
-  pingIntervalSeconds: 10,
-  motd: '',
-  inPacketPaths
+  pingIntervalSeconds: 10, // Keep below 60s so clients won't disconnect
+  motd: '', // Displayed to players joining the lobby
+
+  // Paths where packet handler js files are loaded
+  inPacketPaths: [
+    'packets/in',
+    'packets/in/lobby',
+    'packets/in/game'
+  ]
 };
 
 config.fileServer = {
@@ -29,9 +29,11 @@ config.fileServer = {
 };
 
 config.database = {
-  enableLogging: false,
-  dialect: 'sqlite',
-  storage: ':memory:'
+  enableLogging: false, // Should executed SQL queries be logged
+  dialect: 'sqlite', // MySQL and Postgres *should* be supported out of the box
+  storage: ':memory:' // Store SQLite DB in memory
+
+  // To persist database on disk:
   // storage: './data/db.sqlite'
 };
 

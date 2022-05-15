@@ -22,17 +22,13 @@ const columns = {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false
-  },
-  turnResultsReceived: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false
   }
 };
 
 const associated = [
   ['hasMany', 'Ammo'],
   ['hasMany', 'Action'],
+  ['hasMany', 'Result'],
   ['belongsTo', 'Player'],
   ['belongsTo', 'Game']
 ];
@@ -59,7 +55,7 @@ class GamePlayer extends Model {
 
   async getAmmoString () {
     return (await this.getAmmos())
-      .map(({ count }) => count)
+      .map(ammo => ammo.count)
       .join('\t');
   }
 }

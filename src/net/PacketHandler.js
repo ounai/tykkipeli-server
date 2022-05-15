@@ -9,9 +9,11 @@ const config = require('../config');
 const log = require('../Logger')('PacketHandler');
 const { getFilenamesInDirectory } = require('../Utils');
 
+// Names of packets that should not be logged
 const noLogPackets = [];
 
 if (config.logging.disablePing) {
+  // Don't log handling of ping response packets
   noLogPackets.push('PongPacket');
 }
 
@@ -27,11 +29,16 @@ class PacketHandler {
     for (const filename of filenames) {
       log.debug('Registering packet', filename);
 
+      // Load & instanciate handler class
       const Handler = require.main.require(path.join(__dirname, packetHandlersPath, filename));
       const handler = new Handler(this.#server);
 
-      if (handler instanceof InPacket) this.#packetHandlers.push(handler);
-      else log.error('Invalid packet handler encountered:', handler);
+      // Needs to inherit InPacket
+      if (handler instanceof InPacket) {
+        this.#packetHandlers.push(handler);
+      } else {
+        log.error('Invalid packet handler encountered:', handler);
+      }
     }
   }
 
@@ -51,6 +58,7 @@ class PacketHandler {
   async onPacket (connection, packet) {
     let handled = false;
 
+    // Handle with all matching packet handlers
     for (const packetHandler of this.#packetHandlers) {
       if (packet.type === packetHandler.type && packetHandler.match(packet)) {
         const packetName = packetHandler.constructor.name;

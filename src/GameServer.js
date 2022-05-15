@@ -35,14 +35,18 @@ class GameServer {
     if (await this.#connectionCount.isFull()) {
       log.info('Max number of players reached, not accepting connection', connection.id);
 
-      return new ServerFullPacket().write(connection);
+      new ServerFullPacket().write(connection);
+
+      return;
     }
 
-    log.debug(this.#connectionCount.toString());
     this.#connectionCount.onConnect();
 
+    // Setup connection
     connection.onPacket(this.#packetHandler.onPacket.bind(this.#packetHandler, connection));
     connection.onDisconnect(this.#onDisconnect.bind(this, connection));
+
+    // Initiate contact
     connection.handshake();
   }
 

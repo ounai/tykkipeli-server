@@ -5,15 +5,18 @@ const log = require('./Logger')('ConnectionCount');
 class ConnectionCount {
   #connections = 0;
   #maxConnections = null;
+  #logging;
 
-  constructor (maxConnections) {
+  constructor (maxConnections, logging = true) {
     if (typeof maxConnections !== 'number' || isNaN(maxConnections) || maxConnections <= 0) {
-      log.info('Max connections: unlimited');
+      if (logging) log.info('Max connections: unlimited');
     } else {
-      log.info('Max connections:', maxConnections);
+      if (logging) log.info('Max connections:', maxConnections);
 
       this.#maxConnections = maxConnections;
     }
+
+    this.#logging = logging;
   }
 
   get connections () {
@@ -27,6 +30,8 @@ class ConnectionCount {
   }
 
   onConnect () {
+    if (this.#logging) log.debug(this.toString());
+
     this.#connections++;
 
     if (this.#maxConnections !== null && this.#connections > this.#maxConnections) {

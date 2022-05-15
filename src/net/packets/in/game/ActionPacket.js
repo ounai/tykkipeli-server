@@ -20,10 +20,10 @@ class ActionPacket extends InPacket {
     const action = await Action.create({
       GamePlayerId: gamePlayer.id,
       RoundId: (await game.findCurrentRound()).id,
-      actionId: -1
+      actionTypeId: -1 // TODO get from action type enum
     });
 
-    log.debug('Created action:', action.toJSON());
+    log.debug('Created null action:', action.toJSON());
   }
 
   async #shieldAction (game, player, gamePlayer) {
@@ -32,13 +32,13 @@ class ActionPacket extends InPacket {
     const action = await Action.create({
       GamePlayerId: gamePlayer.id,
       RoundId: (await game.findCurrentRound()).id,
-      actionId: 16 // TODO get from action id enum
+      actionTypeId: 16 // TODO get from action type enum
     });
 
-    log.debug('Created action:', action.toJSON());
+    log.debug('Created shield action:', action.toJSON());
   }
 
-  async #targetedAction (game, player, gamePlayer, actionId, packet) {
+  async #targetedAction (game, player, gamePlayer, actionTypeId, packet) {
     // TODO check if player has already submitted an action for this turn
     // TODO check that player's ammo is sufficient, if not do this.#noAction()
     // TODO decrement ammo if action id is not 0
@@ -56,7 +56,7 @@ class ActionPacket extends InPacket {
       'Player',
       player.toColorString(),
       'submitted action',
-      actionId,
+      actionTypeId,
       `at (${launchScreenX}, ${launchScreenY})`,
       (targetScreenX !== -1 ? `with final target at (${targetScreenX}, ${targetScreenY})` : '')
     );
@@ -64,14 +64,14 @@ class ActionPacket extends InPacket {
     const action = await Action.create({
       GamePlayerId: gamePlayer.id,
       RoundId: (await game.findCurrentRound()).id,
-      actionId,
+      actionTypeId,
       launchScreenX,
       launchScreenY,
       targetScreenX,
       targetScreenY
     });
 
-    log.debug('Created action:', action.toJSON());
+    log.debug('Created targeted action:', action.toJSON());
   }
 
   async handle (connection, packet) {
@@ -79,18 +79,18 @@ class ActionPacket extends InPacket {
     const gamePlayer = await player.getGamePlayer();
     const game = await player.getGame();
 
-    const actionId = packet.getNumber(2);
+    const actionTypeId = packet.getNumber(2);
 
-    // TODO enum action id's
-    if (actionId === -1) {
+    // TODO enum action types
+    if (actionTypeId === -1) {
       // No action
       await this.#noAction(game, player, gamePlayer);
-    } else if (actionId === 16) {
+    } else if (actionTypeId === 16) {
       // Shield
       await this.#shieldAction(game, player, gamePlayer);
     } else {
       // Projectile or teleport
-      await this.#targetedAction(game, player, gamePlayer, actionId, packet);
+      await this.#targetedAction(game, player, gamePlayer, actionTypeId, packet);
     }
 
     new ActionSubmittedEvent(this.server, game).fire();

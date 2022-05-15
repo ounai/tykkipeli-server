@@ -7,28 +7,23 @@ const columns = {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  RoundId: {
+  TurnId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  actionId: {
+  actionTypeId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
   launchScreenX: DataTypes.INTEGER,
   launchScreenY: DataTypes.INTEGER,
   targetScreenX: DataTypes.INTEGER,
-  targetScreenY: DataTypes.INTEGER,
-  executed: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-    defaultValue: false
-  }
+  targetScreenY: DataTypes.INTEGER
 };
 
 const associated = [
   ['belongsTo', 'GamePlayer'],
-  ['belongsTo', 'Round']
+  ['belongsTo', 'Turn']
 ];
 
 class Action extends Model {
@@ -41,7 +36,7 @@ class Action extends Model {
   }
 
   getActionString () {
-    let actionString = this.actionId.toString();
+    let actionString = this.actionTypeId.toString();
 
     const addParam = param => {
       if (param !== null) actionString += `\t${param}`;

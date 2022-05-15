@@ -9,12 +9,14 @@ const Player = require('../db/models/Player');
 const config = require('../config');
 const log = require('../Logger')('Connection');
 
+// Exact strings of packets that should not be logged
 const noLogPacketStrings = {
   in: [],
   out: []
 };
 
 if (config.logging.disablePing) {
+  // Don't log received or sent pinging packets
   noLogPacketStrings.in.push(`"c pong${chalk.blue('\\n')}"`);
   noLogPacketStrings.out.push(`"c ping${chalk.blue('\\n')}"`);
 }
@@ -32,6 +34,7 @@ class Connection {
   #playerId = null;
 
   // Returns true if sequence number is as expected, false if packet should be skipped
+  // We're running on TCP so missed or out-of-order packets should never be an issue
   #verifySequenceNumber (sequenceNumber) {
     if (this.#lastPacketReceived !== null) {
       if (sequenceNumber <= this.#lastPacketReceived) {
@@ -57,7 +60,8 @@ class Connection {
   }
 
   async #socketOnData (buffer) {
-    const packetString = buffer.toString()
+    // Construct a nice and easily readable colorized string for logging
+    const debugPacketString = buffer.toString()
       .replace(/\r/g, chalk.blue('\\r'))
       .replace(/\n/g, chalk.blue('\\n') + '\n')
       .split('\n')
@@ -66,8 +70,8 @@ class Connection {
       .map(s => `"${s}"`)
       .join(', ');
 
-    if (!noLogPacketStrings.in.includes(packetString)) {
-      log.debug(chalk.bold('In:'), packetString);
+    if (!noLogPacketStrings.in.includes(debugPacketString)) {
+      log.debug(chalk.bold('In:'), debugPacketString);
     }
 
     try {
@@ -105,6 +109,7 @@ class Connection {
 
       this.disconnect();
     } else {
+      // Hopefully recoverable
       log.error('Socket error:', err);
     }
   }
@@ -125,6 +130,10 @@ class Connection {
   }
 
   set playerId (playerId) {
+    if (typeof playerId !== 'number') {
+      throw new Error(`Invalid player id ${playerId}`);
+    }
+
     this.#playerId = playerId;
   }
 
@@ -136,6 +145,7 @@ class Connection {
     return this.#id;
   }
 
+  // Only used for data packets
   getNextSequenceNumber () {
     if (this.#lastPacketSent === null) this.#lastPacketSent = 0;
     else this.#lastPacketSent++;
@@ -144,18 +154,19 @@ class Connection {
   }
 
   handshake () {
+    // Magic string needed to get the client going
     this.#socket.write('h 1\nc ctr\n', 'utf8');
   }
 
   write (data, encoding = 'utf8') {
-    const packetString = ['"', '"'].join(
+    const debugPacketString = ['"', '"'].join(
       data.replace(/\r/g, chalk.blue('\\r'))
         .replace(/\n/g, chalk.blue('\\n'))
         .replace(/\t/g, chalk.blue('\\t'))
     );
 
-    if (!noLogPacketStrings.out.includes(packetString)) {
-      log.debug(chalk.bold('Out:'), packetString);
+    if (!noLogPacketStrings.out.includes(debugPacketString)) {
+      log.debug(chalk.bold('Out:'), debugPacketString);
     }
 
     return new Promise(resolve => (
@@ -163,6 +174,7 @@ class Connection {
     ));
   }
 
+  // Attach a packet listener, can only be called once
   onPacket (listener) {
     if (typeof this.#onPacketListener === 'function') {
       throw new Error('onPacket is already being listened!');
@@ -171,6 +183,7 @@ class Connection {
     this.#onPacketListener = listener;
   }
 
+  // Attach a disconnect listener, can only be called once
   onDisconnect (listener) {
     if (typeof this.#onDisconnectListener === 'function') {
       throw new Error('onDisconnect is already being listened!');
@@ -179,6 +192,7 @@ class Connection {
     this.#onDisconnectListener = listener;
   }
 
+  // Disconnect and destroy the socket
   disconnect () {
     log.debug('Disconnecting client');
 
@@ -198,8 +212,11 @@ class Connection {
 
     const player = await Player.findById(this.#playerId);
 
-    if (!player) throw new Error(`Player not found with id ${this.#playerId}`);
-    else if (!player.isConnected) throw new Error(`Player ${player.toString} is not connected`);
+    if (!player) {
+      throw new Error(`Player not found with id ${this.#playerId}`);
+    } else if (!player.isConnected) {
+      throw new Error(`Player ${player.toString} is not connected`);
+    }
 
     return player;
   }

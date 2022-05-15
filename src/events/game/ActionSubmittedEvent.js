@@ -12,6 +12,9 @@ const log = require('../../Logger')('ActionSubmittedEvt');
 
 class ActionSubmittedEvent extends Event {
   async handle (server, game) {
+    // TODO: overhaul using Turn model
+
+    /*
     const round = await game.findCurrentRound();
 
     const actions = await round.getActions({
@@ -60,6 +63,7 @@ class ActionSubmittedEvent extends Event {
     } else {
       log.debug('Turn actions not yet finished for game', game.toColorString());
     }
+    */
   }
 }
 

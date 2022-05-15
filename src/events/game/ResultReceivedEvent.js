@@ -7,6 +7,9 @@ const log = require('../../Logger')('ResultReceivedEvt');
 
 class ResultReceivedEvent extends Event {
   async handle (server, game) {
+    // TODO: overhaul this logic as well
+
+    /*
     const gamePlayers = await game.getGamePlayers();
 
     if (gamePlayers.find(gamePlayer => !gamePlayer.turnResultsReceived)) {
@@ -20,6 +23,7 @@ class ResultReceivedEvent extends Event {
     log.debug('All turn results have been received, starting next turn in game', game.toColorString());
 
     new StartTurnEvent(server, game).fire();
+    */
   }
 }
 
