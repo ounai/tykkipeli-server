@@ -50,6 +50,7 @@ class Packet {
   }
 
   #cleanArgs () {
+    // Strip line breaks and carriage returns
     this.args = this.args.map(arg => arg.replace(/\r/g, '').replace(/\n/g, ''));
   }
 

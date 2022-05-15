@@ -74,7 +74,7 @@ class GameServer {
   }
 
   async init (config) {
-    log.info('Initializing server...');
+    log.info('Initializing game server...');
 
     if (!config) {
       throw new Error(`Invalid config ${config}`);

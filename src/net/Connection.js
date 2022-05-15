@@ -87,10 +87,7 @@ class Connection {
         }
       }
     } catch (err) {
-      log.error(
-        'Error in connection, disconnecting client:',
-        this.#lastPacketReceived === null ? (err.message ?? err) : err
-      );
+      log.error(`Error in connection ${this.id}, disconnecting client:`, err?.message ?? err);
 
       this.disconnect();
     }

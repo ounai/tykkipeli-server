@@ -60,32 +60,33 @@ class JoinGamePacket extends InPacket {
     }
   }
 
-  async #getGame (packet) {
-    const gameId = packet.getNumber(2);
+  #validateGameJoinable (connection, player, game, packet, otherGamePlayers) {
+    if (game.hasStarted || otherGamePlayers.length >= game.maxPlayers) {
+      log.debug('Too late for player', player.toColorString(), 'to join, the game has already started');
+
+      this.#writeJoinError(connection, JoinErrorType.GAME_STARTED);
+
+      return false;
+    }
+
+    if (!this.#validatePassword(connection, player, game, packet)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  async #getGame (gameId) {
     const game = await Game.findById(gameId);
 
-    if (!game) throw new Error(`Invalid game id ${gameId}`);
+    if (!game) {
+      throw new Error(`Invalid game id ${gameId}`);
+    }
 
     return game;
   }
 
-  async handle (connection, packet) {
-    const player = await connection.getPlayer();
-    const game = await this.#getGame(packet);
-    const otherGamePlayers = await game.getPlayers();
-
-    log.debug('Player', player.toColorString(), 'wants to join game', game.toColorString());
-
-    if (!this.#validatePassword(connection, player, game, packet)) {
-      return;
-    }
-
-    if (game.hasStarted || otherGamePlayers.length >= game.maxPlayers) {
-      log.debug('Too late for player', player.toColorString(), 'to join, the game has already started');
-
-      return this.#writeJoinError(connection, JoinErrorType.GAME_STARTED);
-    }
-
+  async #joinPlayer (connection, player, game, otherGamePlayers) {
     const gamePlayer = await GamePlayer.create({
       id: otherGamePlayers.length,
       GameId: game.id,
@@ -117,6 +118,19 @@ class JoinGamePacket extends InPacket {
       await new StartGameEvent(this.server, game).fire();
     } else {
       await new GameListUpdatedEvent(this.server, player).fire();
+    }
+  }
+
+  async handle (connection, packet) {
+    const player = await connection.getPlayer();
+    const game = await this.#getGame(packet.getNumber(2));
+    const otherGamePlayers = await game.getPlayers();
+
+    log.debug('Player', player.toColorString(), 'wants to join game', game.toColorString());
+
+    // Validate password, game not started, game not full
+    if (this.#validateGameJoinable(connection, player, game, packet, otherGamePlayers)) {
+      await this.#joinPlayer(connection, player, game, otherGamePlayers);
     }
   }
 }
