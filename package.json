@@ -4,7 +4,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.2",
     "sequelize": "^6.6.5",
-    "sqlite3": "^5.0.2"
+    "sqlite3": "^5.1.4"
   },
   "name": "tykkipeli-server",
   "description": "Node server implementation for the Aapeli/Playforia classic cannon game",
