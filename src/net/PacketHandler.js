@@ -68,7 +68,7 @@ class PacketHandler {
 
         await packetHandler.handle(connection, packet);
 
-        if (logPacket) log.info(packetName, 'handled!');
+        if (logPacket) log.debug(packetName, 'handled!');
 
         handled = true;
       }

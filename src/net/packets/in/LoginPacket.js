@@ -1,5 +1,7 @@
 'use strict';
 
+const chalk = require('chalk');
+
 const InPacket = require('./InPacket');
 const PacketType = require('../../PacketType');
 const JoinLobbyEvent = require('../../../events/player/JoinLobbyEvent');
@@ -23,6 +25,8 @@ class LoginPacket extends InPacket {
     if (typeof username === 'string' && username.length > 0 && username !== '-') {
       await player.requestUsername(username);
     }
+
+    log.info('Login', chalk.magenta(player.toString()));
 
     if (!player.hasLoggedIn) {
       log.debug('First LoginPacket, sending basic info');
