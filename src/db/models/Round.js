@@ -20,11 +20,14 @@ const columns = {
     // Should be set to current time at the start of a round
     type: DataTypes.DATE,
     defaultValue: null
+  },
+  endTime: {
+    type: DataTypes.DATE,
+    defaultValue: null
   }
 };
 
 const associated = [
-  ['hasMany', 'Turn'],
   ['belongsTo', 'Game']
 ];
 

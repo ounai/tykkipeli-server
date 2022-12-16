@@ -13,17 +13,18 @@ class ResultPacket extends InPacket {
     return packet.startsWith('game', 'result');
   }
 
-  async handle (connection) {
+  async handle (connection, packet) {
     const player = await connection.getPlayer();
     const gamePlayer = await player.getGamePlayer();
+    const game = await player.getGame();
 
-    log.debug('Received turn results from player', player.toColorString());
+    const result = packet.args.slice(2);
 
-    gamePlayer.turnResultsReceived = true;
-    await gamePlayer.save();
+    log.debug(`Received turn result from player ${player.toColorString()}: ${result}`);
 
-    // TODO: make sure there is no race condition here
-    // new ResultReceivedEvent(this.server, await player.getGame()).fire();
+    this.server.gameHandler.getTurn(game.id).addResult(gamePlayer.id, result);
+
+    new ResultReceivedEvent(this.server, await player.getGame()).fire();
   }
 }
 

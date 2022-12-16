@@ -5,7 +5,8 @@ require('dotenv').config();
 const config = {};
 
 config.logging = {
-  disablePing: true // No logging of ping related stuff
+  disablePing: true, // No logging of ping related stuff
+  printConnectionErrorStackTrace: true
 };
 
 config.server = {

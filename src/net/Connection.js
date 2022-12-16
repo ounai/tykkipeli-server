@@ -95,6 +95,11 @@ class Connection {
     } catch (err) {
       log.error(`Error in connection ${this.id}, disconnecting client:`, err?.message ?? err);
 
+      if (config.logging.printConnectionErrorStackTrace) {
+        // eslint-disable-next-line no-console
+        console.error(err.stack);
+      }
+
       await new UnrecoverableErrorPacket().write(this);
 
       this.disconnect();

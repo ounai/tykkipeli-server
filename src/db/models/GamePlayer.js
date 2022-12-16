@@ -27,8 +27,6 @@ const columns = {
 
 const associated = [
   ['hasMany', 'Ammo'],
-  ['hasMany', 'Action'],
-  ['hasMany', 'Result'],
   ['belongsTo', 'Player'],
   ['belongsTo', 'Game']
 ];

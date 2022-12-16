@@ -9,8 +9,9 @@ const ServerFullPacket = require('./net/packets/out/ServerFullPacket');
 const Utils = require('./Utils');
 const ConnectionCount = require('./ConnectionCount');
 const MOTD = require('./MOTD');
+const GameHandler = require('./game/GameHandler');
 
-const log = require('./Logger')('Server');
+const log = require('./Logger')('GameServer');
 
 class GameServer {
   #connectionHandler = null;
@@ -20,6 +21,7 @@ class GameServer {
   #motd = null;
   #pinger = null;
   #connectionCount = null;
+  #gameHandler = null;
 
   async #onDisconnect (connection) {
     log.debug('Connection', connection.id, 'disconnected');
@@ -77,6 +79,10 @@ class GameServer {
     return this.#motd;
   }
 
+  get gameHandler () {
+    return this.#gameHandler;
+  }
+
   async init (config) {
     log.info('Initializing game server...');
 
@@ -106,6 +112,7 @@ class GameServer {
     this.#pinger = new Pinger(this.#connectionHandler, pingIntervalSeconds);
     this.#connectionCount = new ConnectionCount(maxPlayers);
     this.#motd = new MOTD(motd);
+    this.#gameHandler = new GameHandler();
 
     await this.#initDatabase(config);
 

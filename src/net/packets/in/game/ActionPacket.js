@@ -2,8 +2,8 @@
 
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
-const Action = require('../../../../db/models/Action');
 const ActionSubmittedEvent = require('../../../../events/game/ActionSubmittedEvent');
+const Action = require('../../../../game/Action');
 
 const log = require('../../../../Logger')('ActionPacket');
 
@@ -17,28 +17,16 @@ class ActionPacket extends InPacket {
   async #noAction (game, player, gamePlayer) {
     log.debug('Player', player.toColorString(), 'submitted no action');
 
-    const action = await Action.create({
-      GamePlayerId: gamePlayer.id,
-      RoundId: (await game.findCurrentRound()).id,
-      actionTypeId: -1 // TODO get from action type enum
-    });
-
-    log.debug('Created null action:', action.toJSON());
+    this.server.gameHandler.getTurn(game.id).addAction(gamePlayer.id, Action.NONE);
   }
 
   async #shieldAction (game, player, gamePlayer) {
     log.debug('Player', player.toColorString(), 'submitted shield action');
 
-    const action = await Action.create({
-      GamePlayerId: gamePlayer.id,
-      RoundId: (await game.findCurrentRound()).id,
-      actionTypeId: 16 // TODO get from action type enum
-    });
-
-    log.debug('Created shield action:', action.toJSON());
+    this.server.gameHandler.getTurn(game.id).addAction(gamePlayer.id, Action.SHIELD);
   }
 
-  async #targetedAction (game, player, gamePlayer, actionTypeId, packet) {
+  async #targetedAction (game, player, gamePlayer, actionId, packet) {
     // TODO check if player has already submitted an action for this turn
     // TODO check that player's ammo is sufficient, if not do this.#noAction()
     // TODO decrement ammo if action id is not 0
@@ -56,22 +44,14 @@ class ActionPacket extends InPacket {
       'Player',
       player.toColorString(),
       'submitted action',
-      actionTypeId,
+      actionId,
       `at (${launchScreenX}, ${launchScreenY})`,
       (targetScreenX !== -1 ? `with final target at (${targetScreenX}, ${targetScreenY})` : '')
     );
 
-    const action = await Action.create({
-      GamePlayerId: gamePlayer.id,
-      RoundId: (await game.findCurrentRound()).id,
-      actionTypeId,
-      launchScreenX,
-      launchScreenY,
-      targetScreenX,
-      targetScreenY
-    });
+    const action = new Action(actionId, launchScreenX, launchScreenY, targetScreenX, targetScreenY);
 
-    log.debug('Created targeted action:', action.toJSON());
+    this.server.gameHandler.getTurn(game.id).addAction(gamePlayer.id, action);
   }
 
   async handle (connection, packet) {
@@ -79,18 +59,15 @@ class ActionPacket extends InPacket {
     const gamePlayer = await player.getGamePlayer();
     const game = await player.getGame();
 
-    const actionTypeId = packet.getNumber(2);
+    const actionId = packet.getNumber(2);
 
-    // TODO enum action types
-    if (actionTypeId === -1) {
-      // No action
+    if (actionId === Action.NONE.valueOf()) {
       await this.#noAction(game, player, gamePlayer);
-    } else if (actionTypeId === 16) {
-      // Shield
+    } else if (actionId === Action.SHIELD.valueOf()) {
       await this.#shieldAction(game, player, gamePlayer);
     } else {
       // Projectile or teleport
-      await this.#targetedAction(game, player, gamePlayer, actionTypeId, packet);
+      await this.#targetedAction(game, player, gamePlayer, actionId, packet);
     }
 
     new ActionSubmittedEvent(this.server, game).fire();

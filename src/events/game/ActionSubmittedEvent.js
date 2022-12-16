@@ -1,69 +1,54 @@
 'use strict';
 
-const { Op } = require('sequelize');
-
 const Event = require('../Event');
 const Broadcast = require('../../net/Broadcast');
 const ActionPacket = require('../../net/packets/out/game/ActionPacket');
 const StartActionPacket = require('../../net/packets/out/game/StartActionPacket');
-const Action = require('../../db/models/Action');
+const TurnState = require('../../game/TurnState');
 
 const log = require('../../Logger')('ActionSubmittedEvt');
 
 class ActionSubmittedEvent extends Event {
   async handle (server, game) {
-    // TODO: overhaul using Turn model
+    const actions = server.gameHandler.getTurn(game.id).actions;
 
-    /*
-    const round = await game.findCurrentRound();
+    let alivePlayerCount = await game.getPlayerCount();
 
-    const actions = await round.getActions({
-      where: {
-        executed: false
+    if (server.gameHandler.turnExists(game.id)) {
+      const lastTurnResult = server.gameHandler.getTurn(game.id).result;
+
+      if (lastTurnResult) {
+        const health = lastTurnResult.slice(0, alivePlayerCount);
+
+        alivePlayerCount = health.filter(h => h > 0).length;
       }
-    });
+    }
 
-    log.debug(
-      `Actions so far for game ${game.toColorString()}:`,
-      actions.map(a => a.toJSON())
-    );
+    log.debug(actions.size, 'actions so far for game', game.toColorString());
 
     // TODO it should also be somehow checked if round thinking time has elapsed
-    if (actions.length === await game.getPlayerCount()) {
-      log.debug('All turn actions are in for game', game.toColorString());
+    if (actions.size === alivePlayerCount) {
+      if (server.gameHandler.getTurn(game.id).setTurnState(TurnState.RESULTS)) {
+        log.debug('All turn actions are in for game', game.toColorString());
 
-      const players = await game.getPlayers();
+        const players = await game.getPlayers();
 
-      for (const player of players) {
-        const connection = server.connectionHandler.getPlayerConnection(player);
+        for (const player of players) {
+          const connection = server.connectionHandler.getPlayerConnection(player);
 
-        const where = {
-          GamePlayerId: {
-            [Op.not]: (await player.getGamePlayer()).id
-          },
-          executed: false
-        };
-
-        // Send every action packet except the player's own
-        for (const action of await round.getActions({ where })) {
-          new ActionPacket(action).write(connection);
+          // Send every action packet except the player's own
+          for (const [gamePlayerId, action] of actions) {
+            if (gamePlayerId !== (await player.getGamePlayer()).id) {
+              new ActionPacket(gamePlayerId, action).write(connection);
+            }
+          }
         }
+
+        new Broadcast(players, new StartActionPacket(), server).writeAll();
       }
-
-      // Set actions as executed
-      await Action.update({
-        executed: true
-      }, {
-        where: {
-          RoundId: round.id
-        }
-      });
-
-      new Broadcast(players, new StartActionPacket(), server).writeAll();
     } else {
       log.debug('Turn actions not yet finished for game', game.toColorString());
     }
-    */
   }
 }
 
