@@ -70,32 +70,42 @@ class StartGameEvent extends Event {
   async handle (server, game) {
     await this.#validateGame(game);
 
-    log.info('Starting game', game.toColorString());
+    const [affected] = await Game.update({
+      hasStarted: true
+    }, {
+      where: {
+        id: game.id,
+        hasStarted: false
+      }
+    });
 
-    game.hasStarted = true;
-    await game.save();
+    if (affected === 1) {
+      log.info('Starting game', game.toColorString());
 
-    // Updates game listing for players in lobby
-    new GameListUpdatedEvent(server).fire();
+      // Updates game listing for players in lobby
+      new GameListUpdatedEvent(server).fire();
 
-    const players = await game.getPlayers();
+      const players = await game.getPlayers();
 
-    await this.#updatePlayerGameStates(players);
-    await this.#createRounds(game);
-    await this.#createAmmo(players);
+      await this.#updatePlayerGameStates(players);
+      await this.#createRounds(game);
+      await this.#createAmmo(players);
 
-    game.currentRoundNumber = 1;
-    await game.save();
+      game.currentRoundNumber = 1;
+      await game.save();
 
-    log.debug('Sending start game packets for game', game.toColorString());
+      log.debug('Sending start game packets for game', game.toColorString());
 
-    for (const player of players) {
-      const connection = server.connectionHandler.getPlayerConnection(player);
+      for (const player of players) {
+        const connection = server.connectionHandler.getPlayerConnection(player);
 
-      await new StartGamePacket(game, player).write(connection);
+        await new StartGamePacket(game, player).write(connection);
+      }
+
+      await new StartRoundEvent(server, game).fire();
+    } else {
+      log.debugError('Duplicate game start event skipped for game', game.toColorString());
     }
-
-    await new StartRoundEvent(server, game).fire();
   }
 }
 

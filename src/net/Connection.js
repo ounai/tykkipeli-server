@@ -6,6 +6,8 @@ const Packet = require('./Packet');
 const PacketType = require('./PacketType');
 const Player = require('../db/models/Player');
 
+const UnrecoverableErrorPacket = require('../net/packets/out/UnrecoverableErrorPacket');
+
 const config = require('../config');
 const log = require('../Logger')('Connection');
 
@@ -92,6 +94,8 @@ class Connection {
       }
     } catch (err) {
       log.error(`Error in connection ${this.id}, disconnecting client:`, err?.message ?? err);
+
+      await new UnrecoverableErrorPacket().write(this);
 
       this.disconnect();
     }

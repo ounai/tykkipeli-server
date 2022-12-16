@@ -24,7 +24,11 @@ class QuitPacket extends InPacket {
 
     log.debug('Player', player.toColorString(), 'is leaving game', game.toColorString());
 
-    new PartGameLobbyEvent(this.server, connection, player).fire();
+    if (game.hasStarted) {
+      // TODO
+    } else {
+      new PartGameLobbyEvent(this.server, connection, player).fire();
+    }
   }
 }
 

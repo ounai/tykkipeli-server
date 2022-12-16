@@ -274,14 +274,17 @@ class Player extends Model {
     await this.save();
   }
 
+  // TODO: min and max length values customizable in config
   async requestUsername (username) {
     log.debug('Player', this.id, 'requests username', chalk.cyan(username));
 
-    if (username.length < 3) {
+    if (username === this.username) {
+      log.debug(`Username not set, this player already is ${this.toColorString()}`);
+    } else if (username.length < 3) {
       log.debug(`Username not set, "${chalk.cyan(username)}" too short`);
     } else if (username.length > 16) {
       log.debug(`Username not set, "${chalk.cyan(username)}" too long`);
-    } if (await Player.isUsernameInUse(username)) {
+    } else if (await Player.isUsernameInUse(username)) {
       log.debug(`Username not set, "${chalk.cyan(username)}" already in use`);
     } else {
       await this.setUsername(username);
