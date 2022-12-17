@@ -14,7 +14,7 @@ class StartRoundEvent extends Event {
     if (!server) throw new Error(`Invalid server ${server}`);
     if (!(game instanceof Game)) throw new Error(`Invalid game ${game}`);
 
-    if (await game.getPlayerCount() < 1) {
+    if (await game.getPlayerCount() <= 1) {
       return new EndGameEvent(server, game).fire();
     }
 

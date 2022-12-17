@@ -10,6 +10,10 @@ const log = require('../../Logger')('EndRoundEvent');
 
 class EndRoundEvent extends Event {
   async handle (server, game, winnerGamePlayerId) {
+    if (await game.getPlayerCount() <= 1) {
+      return new EndGameEvent(server, game).fire();
+    }
+
     const round = await game.findCurrentRound();
 
     new Broadcast(
