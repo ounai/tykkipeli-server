@@ -45,6 +45,11 @@ const columns = {
     allowNull: false,
     defaultValue: false
   },
+  hasRestarted: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false
+  },
   currentRoundNumber: {
     type: DataTypes.INTEGER,
     validate: {
@@ -81,10 +86,6 @@ class Game extends Model {
   }
 
   async isReadyToStart () {
-    if (this.hasStarted) {
-      return false;
-    }
-
     const gamePlayers = await GamePlayer.findAll({
       where: {
         GameId: this.id

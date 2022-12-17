@@ -1,5 +1,7 @@
 'use strict';
 
+const { Op } = require('sequelize');
+
 const Event = require('../Event');
 const Utils = require('../../Utils');
 
@@ -16,12 +18,12 @@ const Ammo = require('../../db/models/Ammo');
 const log = require('../../Logger')('StartGameEvent');
 
 class StartGameEvent extends Event {
-  async #validateGame (game) {
+  async #validateGame (game, restart) {
     if (!(game instanceof Game)) {
       throw new Error(`Invalid game ${game}`);
     }
 
-    if (game.hasStarted) {
+    if (!restart && game.hasStarted) {
       throw new Error(`Cannot start game ${game.id}, already started!`);
     }
   }
@@ -30,7 +32,7 @@ class StartGameEvent extends Event {
     log.debug('Setting ready to start to false for', gamePlayers.length, 'game players');
 
     for (const gamePlayer of gamePlayers) {
-      gamePlayer.readyToStart = false;
+      gamePlayer.isReadyToStart = false;
       await gamePlayer.save();
     }
   }
@@ -79,44 +81,77 @@ class StartGameEvent extends Event {
     }
   }
 
-  async handle (server, game) {
-    await this.#validateGame(game);
+  async #clearOldRounds (game) {
+    log.debug('Clearing old rounds of game', game.toColorString());
+
+    await Round.destroy({
+      where: {
+        GameId: game.id
+      }
+    });
+  }
+
+  async #clearOldAmmo (game) {
+    log.debug('Clearing old ammos of game', game.toColorString());
+
+    await Ammo.destroy({
+      where: {
+        GameId: game.id
+      }
+    });
+  }
+
+  async #startGame (server, game, restart) {
+    log.info('Starting game', game.toColorString());
+
+    if (restart) {
+      await this.#clearOldRounds(game);
+      await this.#clearOldAmmo(game);
+    } else {
+      // Updates game listing for players in lobby
+      new GameListUpdatedEvent(server).fire();
+    }
+
+    const players = await game.getPlayers();
+
+    await this.#updateGamePlayerReadyToStarts(await game.getGamePlayers());
+    await this.#updatePlayerGameStates(players);
+    await this.#createRounds(game);
+    await this.#createAmmo(game, players);
+
+    game.startingPlayers = players.length;
+    game.currentRoundNumber = 1;
+    await game.save();
+
+    log.debug('Sending start game packets for game', game.toColorString());
+
+    for (const player of players) {
+      const connection = server.connectionHandler.getPlayerConnection(player);
+
+      await new StartGamePacket(game, player).write(connection);
+    }
+
+    await new StartRoundEvent(server, game).fire();
+  }
+
+  async handle (server, game, restart = false) {
+    await this.#validateGame(game, restart);
 
     const [affected] = await Game.update({
-      hasStarted: true
+      hasStarted: true,
+      hasRestarted: true
     }, {
       where: {
         id: game.id,
-        hasStarted: false
+        [Op.or]: {
+          hasStarted: false,
+          hasRestarted: false
+        }
       }
     });
 
     if (affected === 1) {
-      log.info('Starting game', game.toColorString());
-
-      // Updates game listing for players in lobby
-      new GameListUpdatedEvent(server).fire();
-
-      const players = await game.getPlayers();
-
-      await this.#updateGamePlayerReadyToStarts(await game.getGamePlayers());
-      await this.#updatePlayerGameStates(players);
-      await this.#createRounds(game);
-      await this.#createAmmo(game, players);
-
-      game.startingPlayers = players.length;
-      game.currentRoundNumber = 1;
-      await game.save();
-
-      log.debug('Sending start game packets for game', game.toColorString());
-
-      for (const player of players) {
-        const connection = server.connectionHandler.getPlayerConnection(player);
-
-        await new StartGamePacket(game, player).write(connection);
-      }
-
-      await new StartRoundEvent(server, game).fire();
+      this.#startGame(server, game, restart);
     } else {
       log.debugError('Duplicate game start event skipped for game', game.toColorString());
     }

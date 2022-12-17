@@ -10,6 +10,9 @@ class EndGameEvent extends Event {
   async handle (server, game) {
     log.info('Game', game.toColorString(), 'has ended!');
 
+    game.hasRestarted = false;
+    await game.save();
+
     new Broadcast(await game.getPlayers(), new EndGamePacket(), server).writeAll();
   }
 }
