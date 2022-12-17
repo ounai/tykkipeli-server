@@ -27,7 +27,7 @@ class StartGameEvent extends Event {
   }
 
   async #updateGamePlayerReadyToStarts (gamePlayers) {
-    log.debug('Setting ready to start to false for', gamePlayers.count, 'game players');
+    log.debug('Setting ready to start to false for', gamePlayers.length, 'game players');
 
     for (const gamePlayer of gamePlayers) {
       gamePlayer.readyToStart = false;
@@ -36,7 +36,7 @@ class StartGameEvent extends Event {
   }
 
   async #updatePlayerGameStates (players) {
-    log.debug('Setting game state to GAME for', players.count, 'players');
+    log.debug('Setting game state to GAME for', players.length, 'players');
 
     const newGameState = await GameState.findByName('GAME');
 
@@ -73,7 +73,7 @@ class StartGameEvent extends Event {
           GameId: game.id,
           slotId,
           GamePlayerId: gamePlayer.id,
-          count: slotId // TODO
+          count: 0
         });
       }
     }
