@@ -48,11 +48,11 @@ class StartGameEvent extends Event {
   async #createRounds (game) {
     log.debug('Creating', game.roundCount, 'rounds for game', game.toColorString());
 
-    // Map seeds are signed 64-bit ints
-    // Lower values >0 seem to represent nicest looking maps
-    const mapSeed = Utils.getRandomInt(1_000_000);
-
     for (let roundNumber = 1; roundNumber <= game.roundCount; roundNumber++) {
+      // Map seeds are signed 64-bit ints
+      // Lower values >0 seem to represent nicest looking maps
+      const mapSeed = Utils.getRandomInt(1_000_000);
+
       await Round.create({
         GameId: game.id,
         roundNumber,
