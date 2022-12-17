@@ -14,20 +14,19 @@ class ActionPacket extends InPacket {
     return packet.startsWith('game', 'action');
   }
 
-  async #noAction (game, player, gamePlayer) {
+  #noAction (game, player, gamePlayer) {
     log.debug('Player', player.toColorString(), 'submitted no action');
 
     this.server.gameHandler.getTurn(game.id).addAction(gamePlayer.id, Action.NONE);
   }
 
-  async #shieldAction (game, player, gamePlayer) {
+  #shieldAction (game, player, gamePlayer) {
     log.debug('Player', player.toColorString(), 'submitted shield action');
 
     this.server.gameHandler.getTurn(game.id).addAction(gamePlayer.id, Action.SHIELD);
   }
 
-  async #targetedAction (game, player, gamePlayer, actionId, packet) {
-    // TODO check if player has already submitted an action for this turn
+  #targetedAction (game, player, gamePlayer, actionId, packet) {
     // TODO check that player's ammo is sufficient, if not do this.#noAction()
     // TODO decrement ammo if action id is not 0
 
@@ -62,12 +61,12 @@ class ActionPacket extends InPacket {
     const actionId = packet.getNumber(2);
 
     if (actionId === Action.NONE.valueOf()) {
-      await this.#noAction(game, player, gamePlayer);
+      this.#noAction(game, player, gamePlayer);
     } else if (actionId === Action.SHIELD.valueOf()) {
-      await this.#shieldAction(game, player, gamePlayer);
+      this.#shieldAction(game, player, gamePlayer);
     } else {
       // Projectile or teleport
-      await this.#targetedAction(game, player, gamePlayer, actionId, packet);
+      this.#targetedAction(game, player, gamePlayer, actionId, packet);
     }
 
     new ActionSubmittedEvent(this.server, game).fire();

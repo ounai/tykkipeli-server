@@ -5,11 +5,17 @@ const { Model, DataTypes } = require('sequelize');
 const columns = {
   GameId: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true
   },
   roundNumber: {
     type: DataTypes.INTEGER,
-    allowNull: false
+    allowNull: false,
+    primaryKey: true,
+    validate: {
+      min: 1,
+      max: 20
+    }
   },
   mapSeed: {
     type: DataTypes.BIGINT,

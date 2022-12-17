@@ -15,6 +15,8 @@ class DeleteGameEvent extends Event {
 
     log.debug('Deleting game', game.toColorString());
 
+    server.gameHandler.deleteTurn(game.id);
+
     const playersInLobby = await player.findOthersByGameState('LOBBY');
     const removeGamePacket = new GameListRemovePacket(game);
 

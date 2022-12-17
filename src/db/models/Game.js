@@ -22,6 +22,10 @@ const columns = {
     type: DataTypes.INTEGER,
     allowNull: false
   },
+  startingPlayers: {
+    type: DataTypes.INTEGER,
+    defaultValue: null
+  },
   roundCount: {
     type: DataTypes.INTEGER,
     allowNull: false

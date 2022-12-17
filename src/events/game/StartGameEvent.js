@@ -26,7 +26,18 @@ class StartGameEvent extends Event {
     }
   }
 
+  async #updateGamePlayerReadyToStarts (gamePlayers) {
+    log.debug('Setting ready to start to false for', gamePlayers.count, 'game players');
+
+    for (const gamePlayer of gamePlayers) {
+      gamePlayer.readyToStart = false;
+      await gamePlayer.save();
+    }
+  }
+
   async #updatePlayerGameStates (players) {
+    log.debug('Setting game state to GAME for', players.count, 'players');
+
     const newGameState = await GameState.findByName('GAME');
 
     for (const player of players) {
@@ -50,7 +61,7 @@ class StartGameEvent extends Event {
     }
   }
 
-  async #createAmmo (players, roundCount) {
+  async #createAmmo (game, players) {
     log.debug('Creating ammo for', players.length, 'players');
 
     for (const player of players) {
@@ -59,9 +70,10 @@ class StartGameEvent extends Event {
       // 18 ammo slots in total
       for (let slotId = 0; slotId < 18; slotId++) {
         Ammo.create({
+          GameId: game.id,
           slotId,
           GamePlayerId: gamePlayer.id,
-          count: 99 // TODO
+          count: slotId // TODO
         });
       }
     }
@@ -87,10 +99,12 @@ class StartGameEvent extends Event {
 
       const players = await game.getPlayers();
 
+      await this.#updateGamePlayerReadyToStarts(await game.getGamePlayers());
       await this.#updatePlayerGameStates(players);
       await this.#createRounds(game);
-      await this.#createAmmo(players);
+      await this.#createAmmo(game, players);
 
+      game.startingPlayers = players.length;
       game.currentRoundNumber = 1;
       await game.save();
 

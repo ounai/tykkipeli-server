@@ -8,6 +8,11 @@ const columns = {
     allowNull: false,
     primaryKey: true
   },
+  GameId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    primaryKey: true
+  },
   GamePlayerId: {
     type: DataTypes.INTEGER,
     allowNull: false,

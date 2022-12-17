@@ -14,13 +14,13 @@ class ActionSubmittedEvent extends Event {
 
     let alivePlayerCount = await game.getPlayerCount();
 
-    if (server.gameHandler.turnExists(game.id)) {
+    if (server.gameHandler.hasActiveTurn(game.id)) {
       const lastTurnResult = server.gameHandler.getTurn(game.id).result;
 
       if (lastTurnResult) {
-        const health = lastTurnResult.slice(0, alivePlayerCount);
+        const health = lastTurnResult.slice(0, game.startingPlayers);
 
-        alivePlayerCount = health.filter(h => h > 0).length;
+        alivePlayerCount = (await game.getGamePlayers()).filter(gamePlayer => health[gamePlayer.id] > 0).length;
       }
     }
 

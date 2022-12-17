@@ -5,6 +5,7 @@ const StartTurnEvent = require('./StartTurnEvent');
 const Broadcast = require('../../net/Broadcast');
 const StartRoundPacket = require('../../net/packets/out/game/StartRoundPacket');
 const Game = require('../../db/models/Game');
+const EndGameEvent = require('../game/EndGameEvent');
 
 const log = require('../../Logger')('StartRoundEvent');
 
@@ -12,6 +13,10 @@ class StartRoundEvent extends Event {
   async handle (server, game) {
     if (!server) throw new Error(`Invalid server ${server}`);
     if (!(game instanceof Game)) throw new Error(`Invalid game ${game}`);
+
+    if (await game.getPlayerCount() < 1) {
+      return new EndGameEvent(server, game).fire();
+    }
 
     const round = await game.findCurrentRound();
 

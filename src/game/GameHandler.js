@@ -29,8 +29,12 @@ class GameHandler {
     return this.#gameTurns.get(gameId);
   }
 
-  turnExists (gameId) {
+  hasActiveTurn (gameId) {
     return this.#gameTurns.has(gameId);
+  }
+
+  deleteTurn (gameId) {
+    this.#gameTurns.delete(gameId);
   }
 }
 

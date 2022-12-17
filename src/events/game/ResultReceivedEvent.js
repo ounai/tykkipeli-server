@@ -11,11 +11,10 @@ class ResultReceivedEvent extends Event {
   async handle (server, game) {
     const { result, resultsCount } = server.gameHandler.getTurn(game.id);
 
-    const playerCount = await game.getPlayerCount();
-    const health = result.slice(0, playerCount);
-    const alivePlayerCount = health.filter(h => h > 0).length;
+    const health = result.slice(0, game.startingPlayers);
+    const alivePlayerCount = (await game.getGamePlayers()).filter(gamePlayer => health[gamePlayer.id] > 0).length;
 
-    if (resultsCount === playerCount) {
+    if (resultsCount === await game.getPlayerCount()) {
       if (server.gameHandler.getTurn(game.id).setTurnState(TurnState.FINISHED)) {
         if (alivePlayerCount > 1) {
           // Next turn

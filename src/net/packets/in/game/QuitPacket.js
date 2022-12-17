@@ -3,7 +3,10 @@
 const InPacket = require('../InPacket');
 const PacketType = require('../../../PacketType');
 const Game = require('../../../../db/models/Game');
+
 const PartGameLobbyEvent = require('../../../../events/player/PartGameLobbyEvent');
+const PartGameEvent = require('../../../../events/player/PartGameEvent');
+const JoinLobbyEvent = require('../../../../events/player/JoinLobbyEvent');
 
 const log = require('../../../../Logger')('QuitPacket');
 
@@ -25,10 +28,12 @@ class QuitPacket extends InPacket {
     log.debug('Player', player.toColorString(), 'is leaving game', game.toColorString());
 
     if (game.hasStarted) {
-      // TODO
+      await new PartGameEvent(this.server, player).fire();
     } else {
-      new PartGameLobbyEvent(this.server, connection, player).fire();
+      await new PartGameLobbyEvent(this.server, player).fire();
     }
+
+    new JoinLobbyEvent(this.server, connection, player, true).fire();
   }
 }
 

@@ -1,6 +1,5 @@
 'use strict';
 
-const Connection = require('../../net/Connection');
 const PartReason = require('../../lobby/PartReason');
 const Broadcast = require('../../net/Broadcast');
 
@@ -13,7 +12,6 @@ const GameInfoPacket = require('../../net/packets/out/game/GameInfoPacket');
 const OwnInfoPacket = require('../../net/packets/out/game/OwnInfoPacket');
 
 const Event = require('../Event');
-const JoinLobbyEvent = require('./JoinLobbyEvent');
 const DeleteGameEvent = require('../game/DeleteGameEvent');
 const PlayerCountChangeEvent = require('../gameLobby/PlayerCountChangeEvent');
 const GameListUpdatedEvent = require('../lobby/GameListUpdatedEvent');
@@ -21,12 +19,6 @@ const GameListUpdatedEvent = require('../lobby/GameListUpdatedEvent');
 const log = require('../../Logger')('PartGameLobbyEvent');
 
 class PartGameLobbyEvent extends Event {
-  async #lastPlayerDeleteGame (server, player, game) {
-    log.debug(player.toColorString(), 'is the last player, deleting game', game.toColorString());
-
-    await new DeleteGameEvent(server, game, player).fire();
-  }
-
   async #reorderPlayerIds (gamePlayers, server) {
     for (let i = 0; i < gamePlayers.length; i++) {
       if (i !== gamePlayers[i].id) {
@@ -51,9 +43,8 @@ class PartGameLobbyEvent extends Event {
     }
   }
 
-  async handle (server, connection, player, reason = PartReason.USER_LEFT) {
+  async handle (server, player, reason = PartReason.USER_LEFT) {
     if (!server) throw new Error(`Invalid server ${server}`);
-    if (!(connection instanceof Connection)) throw new Error(`Invalid connection ${connection}`);
     if (!(player instanceof Player)) throw new Error(`Invalid player ${player}`);
     if (!(reason instanceof PartReason)) throw new Error(`Invalid part reason ${reason}`);
 
@@ -70,7 +61,9 @@ class PartGameLobbyEvent extends Event {
     const playerCount = await game.getPlayerCount();
 
     if (playerCount === 0) {
-      await this.#lastPlayerDeleteGame(server, player, game);
+      log.debug(player.toColorString(), 'is the last player, deleting game', game.toColorString());
+
+      await new DeleteGameEvent(server, game, player).fire();
     } else {
       log.debug('Removing', player.toColorString(), 'from game', game.toColorString());
 
@@ -96,8 +89,6 @@ class PartGameLobbyEvent extends Event {
       new PlayerCountChangeEvent(game).fire();
       new GameListUpdatedEvent(server, player).fire();
     }
-
-    new JoinLobbyEvent(server, connection, player, true).fire();
   }
 }
 

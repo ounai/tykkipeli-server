@@ -15,11 +15,11 @@ class StartTurnEvent extends Event {
   async handle (server, game) {
     log.debug('Starting next turn of game', game.toColorString());
 
-    if (server.gameHandler.turnExists(game.id)) {
+    if (server.gameHandler.hasActiveTurn(game.id)) {
       const lastTurnResult = server.gameHandler.getTurn(game.id).result;
 
       if (lastTurnResult) {
-        const health = lastTurnResult.slice(0, await game.getPlayerCount());
+        const health = lastTurnResult.slice(0, game.startingPlayers);
 
         this.#health = health;
       }
