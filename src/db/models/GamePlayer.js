@@ -2,6 +2,8 @@
 
 const { Model, DataTypes, Op } = require('sequelize');
 
+const Ammo = require('./Ammo');
+
 const columns = {
   id: {
     type: DataTypes.INTEGER,
@@ -52,7 +54,14 @@ class GamePlayer extends Model {
   }
 
   async getAmmoString () {
-    return (await this.getAmmos())
+    const ammos = await Ammo.findAll({
+      where: {
+        GameId: this.GameId,
+        GamePlayerId: this.id
+      }
+    });
+
+    return ammos
       .map(ammo => ammo.count)
       .join('\t');
   }
