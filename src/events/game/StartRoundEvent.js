@@ -93,7 +93,7 @@ class StartRoundEvent extends Event {
 
     await this.#addAmmo(game, round.roundNumber, (await game.getWeaponAddingMode()).name);
 
-    server.gameHandler.resetTurn(game.id);
+    server.gameHandler.resetTurn(game.id, true);
 
     new Broadcast(
       await game.getPlayers(),

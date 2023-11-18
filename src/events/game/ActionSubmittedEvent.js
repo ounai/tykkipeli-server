@@ -14,8 +14,8 @@ class ActionSubmittedEvent extends Event {
 
     let alivePlayerCount = await game.getPlayerCount();
 
-    if (server.gameHandler.hasActiveTurn(game.id)) {
-      const lastTurnResult = server.gameHandler.getTurn(game.id).result;
+    if (server.gameHandler.hasPreviousTurn(game.id)) {
+      const lastTurnResult = server.gameHandler.getPreviousTurn(game.id).result;
 
       if (lastTurnResult) {
         const health = lastTurnResult.slice(0, game.startingPlayers);
@@ -24,7 +24,7 @@ class ActionSubmittedEvent extends Event {
       }
     }
 
-    log.debug(actions.size, 'actions so far for game', game.toColorString());
+    log.debug(actions.size, '/', alivePlayerCount, 'actions received for game', game.toColorString());
 
     // TODO it should also be somehow checked if round thinking time has elapsed
     if (actions.size === alivePlayerCount) {
